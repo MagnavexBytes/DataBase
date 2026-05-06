@@ -19,6 +19,8 @@ c.execute('''DROP TABLE IF EXISTS frame_stats''')
 c.execute('''DROP TABLE IF EXISTS weapon_stats''')
 c.execute('''DROP TABLE IF EXISTS parts''')
 
+c.execute('''DROP TABLE IF EXISTS full_head_stats''')
+
 
 # Таблицы
 # Таблица характеристик, присутствующих у всех деталей
@@ -26,11 +28,11 @@ c.execute('''CREATE TABLE IF NOT EXISTS parts (
           id INTEGER PRIMARY KEY,
           name TEXT NOT NULL UNIQUE,
           category TEXT NOT NULL, -- ДОБАВИТЬ IN 'Head', 'Core', 'Arms', 'Legs', 'R-Arm', 'L-Arm', 'R-Back', 'L-Back', 'Booster', 'FCS', 'Generator', 'Expansion'
-          manufacturer TEXT,
-          price INTEGER,
-          weight INTEGER,
-          en_load INTEGER,
-          description TEXT)
+          manufacturer TEXT, -- ДОБАВИТЬ IN Balam, Dafeng Core Industries, RaD, Rubicon Research Institute, ALLMIND, Arquebus ADD, Arquebus, BAWS, Schneider, Elcano
+          price INTEGER NOT NULL,
+          weight INTEGER NOT NULL,
+          en_load INTEGER NOT NULL,
+          description TEXT NOT NULL)
 ''')
 
 # Таблица характеристик, присутствующих только у оружия
@@ -50,13 +52,13 @@ c.execute('''CREATE TABLE IF NOT EXISTS frame_stats (
     anti_energy INTEGER,
     anti_explosive INTEGER,
     attitude_stability INTEGER,
-    -- system_recovery INTEGER,
     FOREIGN KEY (part_id) REFERENCES parts(id))
 ''')
 
 # Таблица характеристик, присутствующих только у частей голов
 c.execute('''CREATE TABLE head_stats (
     part_id INTEGER PRIMARY KEY,
+    system_recovery INTEGER,
     scan_distance INTEGER,
     scan_duration REAL,
     FOREIGN KEY (part_id) REFERENCES frame_stats(part_id))
@@ -86,6 +88,8 @@ c.execute('''CREATE TABLE leg_stats (
     part_id INTEGER PRIMARY KEY,
     load_limit INTEGER,
     leg_type TEXT, -- ДОБАВИТЬ IN Bipedal, Reverse Joint, Tetrapod, Tank
+    -- jump_distance INTEGER,
+    -- jump height INTEGER,
     FOREIGN KEY (part_id) REFERENCES frame_stats(part_id))
 ''')
 
@@ -94,10 +98,16 @@ c.execute('''CREATE TABLE booster_stats (
     part_id INTEGER PRIMARY KEY,
     thrust INTEGER,
     upward_thrust INTEGER,
-    quick_boost_thrust INTEGER,
-    quick_boost_en_consumption INTEGER,
+    upward_en_consumption INTEGER,
+    qb_thrust INTEGER,
+    qb_jet_duration REAL,
+    qb_en_consumption INTEGER,
     qb_reload_time REAL,
+    qb_reload_ideal_weight INTEGER,
+    ab_thrust INTEGER,
+    ab_en_consumption INTEGER,
     melee_attack_thrust INTEGER,
+    melee_attack_en_consumption INTEGER,
     FOREIGN KEY (part_id) REFERENCES parts(id))
 ''')
 
@@ -155,7 +165,7 @@ parts_data = [(1, 'IB-C03H: HAL 826', 'Head', 'Rubicon Research Institute', 0, 3
               (19, 'HC-2000 FINDER EYE', 'Head', 'RaD', 0, 2670, 125, 'Head part for scout ACs developed by RaD. Originally specced for surveying terrain, this model makes up for what it lacks in combat performance with a light energy footprint and commendable ease of use.'),
               (20, 'EL-TH-10 FIRMEZA', 'Head', 'Elcano', 0, 2570, 134, 'Lightweight head part developed by Elcano. In keeping with Elcanos roots in producing and forging steel, this model exhibits craftsman-like flair, being light while providing reliable defenses.'),
               (21, 'AH-J-124 BASHO', 'Head', 'BAWS', 0, 4600, 95, 'Head part developed by BAWS for an old-generation AC. Said AC was one of the earliest models, developed to succeed MT-class machines, and modern fans for such classic hardware are fond of its characteristic bulk.'),
-              (22, 'DF-HD-08 TIAN-QIANG', 'Dafeng Core Industries', 'BAWS', 0, 1230, 88, 'Head part developed by Dafeng Core Industries for the heavyweight TIAN-QIANG AC. Incorporates only the most essential functionality with a minimalist build in keeping with Dafengs "stout tree, slender branches philosophy.'),
+              (22, 'DF-HD-08 TIAN-QIANG', 'Head', 'BAWS', 0, 1230, 88, 'Head part developed by Dafeng Core Industries for the heavyweight TIAN-QIANG AC. Incorporates only the most essential functionality with a minimalist build in keeping with Dafengs "stout tree, slender branches philosophy.'),
 
               (23, 'IB-C03C: HAL 826', 'Core', 'Rubicon Research Institute', 0, 18520, 366, 'Core part for the HAL 826 piloted AC, developed long ago by the Rubicon Research Institute. The last of the Ibis Series and the only piloted Ibis craft, if was built to be the final safety valve to prevent Coral Collapse.'),
               (24, 'IA-C01C: EPHEMERA', 'Core', 'Rubicon Research Institute', 0, 13200, 412, 'Core part for the EPHEMERA unpiloted ACs, developed long ago by the Rubicon Research Institute. An old development quirk allows for piloted operation, but the core box makes only perfunctory concessions for a human occupant.'),
@@ -174,45 +184,113 @@ parts_data = [(1, 'IB-C03H: HAL 826', 'Head', 'Rubicon Research Institute', 0, 3
               (37, 'AC-J-120 BASHO', 'Core', 'BAWS', 0, 16100, 300, 'Core part developed by BAWS for an old-generation AC. Said AC was one of the earliest models, developed to succeed MT-class machines, and modern fans of such classic hardware are fond of its characteristic bulk.'),
               (38, 'CC-2000 ORBITER', 'Core', 'RaD', 0, 12650, 267, 'Core part for scout ACs developed by RaD. Originally specced for extravehicular activity in space, this model makes up for what it lacks in combat performance with a light energy footprint and commendable ease of use.'),
 
-              (39, 'LG-011 MELANDER', 'Arms', 'Balam', 0, 16200, 180),
-
-              (40, 'LG-011 MELANDER', 'Legs', 'Balam', 0, 16200, 180),
-
-              (40, 'RF-024 TURNER', 'R-Arm', 'Balam', 0, 3620, 140),
-
-              (50, 'BST-G1/P10', 'Booster', 'Furlong', 0, 1440, 220),
-
-              (50, 'BST-G1/P10', 'Expansion', '', 0, 1440, 220),
-
-              (60, 'VP-20S', 'Generator', 'Arquebus', 0, 3420, 0)]
-c.executemany("INSERT OR IGNORE INTO parts (id, name, category, manufacturer, price, weight, en_load) VALUES (?, ?, ?, ?, ?, ?, ?)", parts_data)
+              (39, 'VP-46D', 'Arms', 'Arquebus', 0, 10990, 248, 'Arm parts developed by Arquebus, derived from an existing model. Engineered in anticipation of regular use by the Vespers, this model features further improvements to performance.'),
+              (40, 'IA-C01A: EPHEMERA', 'Arms', 'BalRubicon Research Instituteam', 0, 12700, 312, 'Arm parts for the EPHEMERA unpiloted ACs, developed long ago by the Rubicon Research Institute. An old development quirk allows for piloted operation, albeit with actuation translation that outstrips the capability of human nerves.'),
+              (41, 'AS-5000 SALAD', 'Arms', 'RaD', 0, 20940, 356, 'Arm parts for a combat AC developed by RaD. though it was assembled from a patchwork of reclaimed resources, RaD mobilized its entire engineering team to fine-tune its design for formidable performance.'),
+              (42, 'AA-J-123/RC JAILBREAK', 'Arms', 'BAWS', 0, 8480, 210, 'Junk. Originally arm parts for an old-generation AC developed by BAWS. RaD engineers infiltrated Institute City to make field repairs—just enough to make this part operable, but not enough to fix its weathered armor.'),
+              (43, 'VE-46A', 'Arms', 'Arquebus ADD', 0, 22210, 380, 'Heavyweight arm parts designed by Arquebus ADD. Incorporates cutting-edge technology to enable defiance of the PCA. This models distinctive curved armor plating proved solid defence against damage of all kinds.'),
+              (44, 'VP-46S', 'Arms', 'Arquebus', 0, 14020, 278, 'Mass-produced arm parts developed by Arquebus. A number of refinements and updates have been made to the strong foundation laid by the preceding model, creating a masterpiece in the realm of second-generation AC parts.'),
+              (45, 'NACHTREIHER/46E', 'Arms', 'Schneider', 0, 11420, 302, 'Lightweight arm parts developed by Schneider. Schneider is a specialist in aerodynamic research, and this model reflects their experience with a light and highly agile build.'),
+              (46, 'EL-TA-10 FIRMEZA', 'Arms', 'Elcano', 0, 11220, 270, 'Lightweight arm parts developed by Elcano. In keeping with Elcanos roots in producing and forging steel, this model exhibits craftsman-like flair, being light while providing dependable carrying capacity.'),
+              (47, 'DF-AR-09 TIAN-LAO', 'Arms', 'Dafeng Core Industries', 0, 26740, 266, 'Revised arm parts developed by Dafeng Core Industries. This model attempts to further refine Dafengs (stout tree, slender branches) philosophy by enhancing the durability of the armor plating around the shoulders.'),
+              (48, 'DF-AR-08 TIAN-QIANG', 'Arms', 'Dafeng Core Industries', 0, 20020, 295, 'Arm parts developed by Dafeng Core Industries for the heavyweight TIAN-QIANG AC. Built to embody Dafengs (stout tree, slender branches) philosophy, their weight is balanced by heavy upper arms and lighter forearms.'),
+              (49, 'AR-012 MELANDER C3', 'Arms', 'Balam', 0, 12300, 232, 'Custom arm parts developed by Balam. Altered to improve combat suitability, this model features a lighter basic frame while also enhancing arm maneuverability.'),
+              (50, 'AC-3000 WRECKER', 'Arms', 'RaD', 0, 14650, 220, 'Arm parts for construction ACs developed by RaD. Specced for demolition work, this model make up for combat performance shortcomings with its sturdiness and excellent recoil control.'),
+              (51, 'AC-2000 TOOL ARM', 'Arms', 'Balam', 0, 11300, 216, 'Arm parts for scout ACs developed by RaD. Originally specced for recovering scrap, this model makes up for what it lacks in combat performance with a light energy footprint and commendable ease of use.'),
+              (52, 'AA-J-123 BASHO', 'Arms', 'BAWS', 0, 10480, 210, 'Arm parts developed by BAWS for an old-generation AC. Said AC was one of the earliest models, developed to succeed MT-class machines, and modern fans of such classic hardware are fond of its characteristic bulk.'),
+              (53, '04-101 MIND ALPHA', 'Arms', 'ALLMIND', 0, 16960, 358, 'Arm parts developed by ALLMIND for model ACs. Designed as part of a research project to extend human sensory capabilities, with numerous optimizations to create an AC that, to the pilot, feels like an extension of the body.'),
+              (54, 'LG-011 MELANDER', 'Arms', 'Balam', 0, 13650, 265, 'Medium-weight arm parts developed by Balam. The simple design and solid performance of this model make it suited for mass production—reflecting Balams strategy of overwhelming its enemies with its material superiority.'),              
+              
+              (55, 'LG-011 MELANDER4', 'Legs', 'Balam', 0, 1000, 1000, 'text'),
+              
+              (56, 'RF-024 TURNER', 'R-Arm', 'Balam', 0, 0, 0, ''),
+              
+              (57, 'BST-G1/P10', 'Booster', 'Furlong', 0, 0, 0, ''),
+              
+              (58, 'BST-G1/P10', 'Expansion', '', 0, 0, 0, ''),
+              
+              (59, 'VP-20S', 'Generator', 'Arquebus', 0, 0, 0, '')]
+c.executemany("INSERT OR IGNORE INTO parts (id, name, category, manufacturer, price, weight, en_load, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", parts_data)
 conn.commit()
 
-frame_stats_data = [(1, 380, 110, 80, 95, 120),
-                    (2, 2850, 420, 380, 410, 450),
-                    (3, 1450, 280, 240, 260, 350)]
+frame_stats_data = [(1, 930, 169, 182, 180, 436),
+                    (2, 520, 158, 164, 150, 536),
+                    (3, 820, 178, 186, 173, 365),
+                    (4, 770, 174, 167, 181, 448),
+                    (5, 1060, 179, 188, 178, 393),
+
+                    (6, 1450, 280, 240, 260, 350),
+                    (7, 1450, 280, 240, 260, 350),
+                    (8, 1450, 280, 240, 260, 350),
+                    (9, 1450, 280, 240, 260, 350),
+                    (10, 1450, 280, 240, 260, 350),
+                    (11, 1450, 280, 240, 260, 350),
+                    (12, 1450, 280, 240, 260, 350),
+                    (13, 1450, 280, 240, 260, 350),
+                    (14, 1450, 280, 240, 260, 350),
+                    (15, 1450, 280, 240, 260, 350),
+                    (16, 1450, 280, 240, 260, 350),
+                    (17, 1450, 280, 240, 260, 350),
+                    (18, 1450, 280, 240, 260, 350),
+                    (19, 1450, 280, 240, 260, 350),
+                    (21, 1450, 280, 240, 260, 350),
+                    (21, 1450, 280, 240, 260, 350),
+                    (22, 222, 222, 222, 222, 222)]
 c.executemany("INSERT OR IGNORE INTO frame_stats (part_id, ap, anti_kinetic, anti_energy, anti_explosive, attitude_stability) VALUES (?, ?, ?, ?, ?, ?)", frame_stats_data)
 conn.commit()
 
-head_stats_data = [(1, 450, 3.5)]
-c.executemany("INSERT OR IGNORE INTO head_stats (part_id, scan_distance, scan_duration) VALUES (?, ?, ?)", head_stats_data)
+head_stats_data = [(1, 125, 600, 16.8),
+                    (2, 116, 540, 12.0),
+                    (3, 103, 320, 6.0),
+                    (4, 115, 450, 10.8),
+                    (5, 104, 490, 12.6),
+
+                    (6, 1450, 280, 240),
+                    (7, 1450, 280, 240),
+                    (8, 1450, 280, 240),
+                    (9, 1450, 280, 240),
+                    (10, 1450, 280, 240),
+                    (11, 1450, 280, 240),
+                    (12, 1450, 280, 240),
+                    (13, 1450, 280, 240),
+                    (14, 1450, 280, 240),
+                    (15, 1450, 280, 240),
+                    (16, 1450, 280, 240),
+                    (17, 1450, 280, 240),
+                    (18, 1450, 280, 240),
+                    (19, 1450, 280, 240),
+                    (21, 1450, 280, 240),
+                    (21, 1450, 280, 240),
+                    (22, 2220, 222, 222)]
+c.executemany("INSERT OR IGNORE INTO head_stats (part_id, system_recovery, scan_distance, scan_duration) VALUES (?, ?, ?, ?)", head_stats_data)
 conn.commit()
 
-leg_stats_data = [(3, 52000, 'Bipedal')]
-c.executemany("INSERT OR IGNORE INTO leg_stats (part_id, load_limit, leg_type) VALUES (?, ?, ?)", leg_stats_data)
-conn.commit()
+# leg_stats_data = [(55, 52000, 'Bipedal')]
+# c.executemany("INSERT OR IGNORE INTO leg_stats (part_id, load_limit, leg_type) VALUES (?, ?, ?)", leg_stats_data)
+# conn.commit()
 
-weapon_stats_data = [(4, 135, 110, 'Kinetic')]
-c.executemany("INSERT OR IGNORE INTO weapon_stats (part_id, attack_power, impact, damage_type) VALUES (?, ?, ?, ?)", weapon_stats_data)
-conn.commit()
+# weapon_stats_data = [(4, 135, 110, 'Kinetic')]
+# c.executemany("INSERT OR IGNORE INTO weapon_stats (part_id, attack_power, impact, damage_type) VALUES (?, ?, ?, ?)", weapon_stats_data)
+# conn.commit()
 
-booster_stats_data = [(5, 4800, 3200, 12500)]
-c.executemany("INSERT OR IGNORE INTO booster_stats (part_id, thrust, upward_thrust, quick_boost_thrust) VALUES (?, ?, ?, ?)", booster_stats_data)
-conn.commit()
+# booster_stats_data = [(5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)]
+# c.executemany("INSERT OR IGNORE INTO booster_stats (part_id, thrust, upward_thrust, upward_en_consumption, qb_thrust, qb_jet_duration, qb_en_consumption, qb_reload_time, qb_reload_ideal_weight, ab_thrust, ab_en_consumption, melee_attack_thrust, melee_attack_en_consumption) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", booster_stats_data)
+# conn.commit()
 
-generator_stats_data = [(6, 2620, 892, 434, 1200, 3400)]
-c.executemany("INSERT OR IGNORE INTO generator_stats (part_id, en_capacity, en_recharge, supply_recovery, post_recovery_en_supply, en_output) VALUES (?, ?, ?, ?, ?, ?)", generator_stats_data)
-conn.commit()
+# generator_stats_data = [(6, 2620, 892, 434, 1200, 3400)]
+# c.executemany("INSERT OR IGNORE INTO generator_stats (part_id, en_capacity, en_recharge, supply_recovery, post_recovery_en_supply, en_output) VALUES (?, ?, ?, ?, ?, ?)", generator_stats_data)
+# conn.commit()
+
+# Создание новых 
+c.execute('''CREATE TABLE full_head_stats AS
+          SELECT p.id, p.name, p.category, p.manufacturer, p.price, p.weight, p.en_load, p.description,
+          fs.ap, fs.anti_kinetic, fs.anti_energy, fs.anti_explosive, fs.attitude_stability,
+          hs.system_recovery, hs.scan_distance, hs.scan_duration
+          FROM parts AS p
+          LEFT JOIN frame_stats AS fs ON p.id = fs.part_id
+          LEFT JOIN head_stats AS hs ON fs.part_id = hs.part_id
+          WHERE p.id BETWEEN 1 AND 22
+          ''')
 
 
 conn.close()

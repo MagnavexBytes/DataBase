@@ -54,25 +54,25 @@ c.executemany("INSERT INTO posts (message, id_author, id_topic)  VALUES (?,?,?)"
 conn.commit()
 
 # Вывод содержимого таблиц
-c.execute('''Select * from users''')
-pp.pprint(c.fetchall())
-c.execute('''Select * from topics''')
-pp.pprint(c.fetchall())
-c.execute('''Select * from posts''')
-pp.pprint(c.fetchall())
+# c.execute('''Select * from users''')
+# pp.pprint(c.fetchall())
+# c.execute('''Select * from topics''')
+# pp.pprint(c.fetchall())
+# c.execute('''Select * from posts''')
+# pp.pprint(c.fetchall())
 
 # Задание
-# c.execute("""SELECT 
-#     t.topic_name AS "Название темы",
-#     p.post_text AS "Текст сообщения",
-#     u.username AS "Имя пользователя"
-# FROM 
-#     posts AS p
-# JOIN 
-#     users AS u ON p.user_id = u.user_id
-# JOIN 
-#     topics AS t ON p.topic_id = t.topic_id""")
-# pp.pprint(c.fetchall())
+c.execute("""SELECT 
+    t.topic_name AS "Название темы",
+    p.message AS "Текст сообщения",
+    u.name AS "Имя пользователя"
+FROM 
+    posts AS p
+LEFT JOIN 
+    users AS u ON p.id_author = u.id_user
+JOIN 
+    topics AS t ON p.id_topic = t.id_topic""")
+pp.pprint(c.fetchall())
 
 # Закрытие передачи
 conn.close() 
