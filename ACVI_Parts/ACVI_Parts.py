@@ -7,7 +7,6 @@ c.execute('''PRAGMA foreign_keys = ON''')
 
 
 # Удаление таблиц целиком
-c.execute('''DROP TABLE IF EXISTS expansion_stats''')
 c.execute('''DROP TABLE IF EXISTS generator_stats''')
 c.execute('''DROP TABLE IF EXISTS fcs_stats''')
 c.execute('''DROP TABLE IF EXISTS booster_stats''')
@@ -27,7 +26,7 @@ c.execute('''DROP TABLE IF EXISTS full_head_stats''')
 c.execute('''CREATE TABLE IF NOT EXISTS parts (
           id INTEGER PRIMARY KEY,
           name TEXT NOT NULL UNIQUE,
-          category TEXT NOT NULL, -- ДОБАВИТЬ IN 'Head', 'Core', 'Arms', 'Legs', 'R-Arm', 'L-Arm', 'R-Back', 'L-Back', 'Booster', 'FCS', 'Generator', 'Expansion'
+          category TEXT NOT NULL, -- ДОБАВИТЬ IN 'Head', 'Core', 'Arms', 'Legs', 'R-Arm', 'L-Arm', 'R-Back', 'L-Back', 'Booster', 'FCS', 'Generator'
           manufacturer TEXT, -- ДОБАВИТЬ IN Balam, Dafeng Core Industries, RaD, Rubicon Research Institute, ALLMIND, Arquebus ADD, Arquebus, BAWS, Schneider, Elcano
           price INTEGER NOT NULL,
           weight INTEGER NOT NULL,
@@ -133,15 +132,6 @@ c.execute('''CREATE TABLE generator_stats (
     FOREIGN KEY (part_id) REFERENCES parts(id))
 ''')
 
-# Таблица характеристик, присутствующих только у частей расширений
-c.execute('''CREATE TABLE expansion_stats (
-    part_id INTEGER PRIMARY KEY,
-    uses INTEGER,
-    resilience INTEGER,
-    duration REAL,
-    FOREIGN KEY (part_id) REFERENCES parts(id))
-''')
-
 
 # Данные
 parts_data = [(1, 'IB-C03H: HAL 826', 'Head', 'Rubicon Research Institute', 0, 3760, 215, 'Head part for the HAL 826 piloted AC, developed long ago by the Rubicon Research Institute. The last of the Ibis Series and the only piloted Obis craft, it was built to be the final safety valve to prevent a Coral Collapse.'),
@@ -207,9 +197,9 @@ parts_data = [(1, 'IB-C03H: HAL 826', 'Head', 'Rubicon Research Institute', 0, 3
               
               (57, 'BST-G1/P10', 'Booster', 'Furlong', 0, 0, 0, ''),
               
-              (58, 'BST-G1/P10', 'Expansion', '', 0, 0, 0, ''),
+
               
-              (59, 'VP-20S', 'Generator', 'Arquebus', 0, 0, 0, '')]
+              (58, 'VP-20S', 'Generator', 'Arquebus', 0, 0, 0, '')]
 c.executemany("INSERT OR IGNORE INTO parts (id, name, category, manufacturer, price, weight, en_load, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", parts_data)
 conn.commit()
 
