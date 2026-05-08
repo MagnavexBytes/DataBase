@@ -19,6 +19,9 @@ c.execute('''DROP TABLE IF EXISTS weapon_stats''')
 c.execute('''DROP TABLE IF EXISTS parts''')
 
 c.execute('''DROP TABLE IF EXISTS full_head_stats''')
+c.execute('''DROP TABLE IF EXISTS full_core_stats''')
+c.execute('''DROP TABLE IF EXISTS full_arms_stats''')
+c.execute('''DROP TABLE IF EXISTS full_legs_stats''')
 
 
 # Таблицы
@@ -85,50 +88,50 @@ c.execute('''CREATE TABLE arm_stats (
 # Таблица характеристик, характерных только для деталей ног
 c.execute('''CREATE TABLE leg_stats (
     part_id INTEGER PRIMARY KEY,
-    load_limit INTEGER,
-    leg_type TEXT, -- ДОБАВИТЬ IN Bipedal, Reverse Joint, Tetrapod, Tank
-    -- jump_distance INTEGER,
-    -- jump height INTEGER,
+    load_limit INTEGER NOT NULL,
+    leg_type TEXT CHECK (leg_type IN ('Bipedal', 'Reverse Joint', 'Tetrapod', 'Tank', 'Hover')),
+    jump_distance INTEGER, --jump_distance и jump_height моuen быть NULL значением
+    jump_height INTEGER, --Ибо ноги типа tank и hover не могут прыгать
     FOREIGN KEY (part_id) REFERENCES frame_stats(part_id))
 ''')
 
 # Таблица характеристик, присутствующих только у частей ускорителей
 c.execute('''CREATE TABLE booster_stats (
     part_id INTEGER PRIMARY KEY,
-    thrust INTEGER,
-    upward_thrust INTEGER,
-    upward_en_consumption INTEGER,
-    qb_thrust INTEGER,
-    qb_jet_duration REAL,
-    qb_en_consumption INTEGER,
-    qb_reload_time REAL,
-    qb_reload_ideal_weight INTEGER,
-    ab_thrust INTEGER,
-    ab_en_consumption INTEGER,
-    melee_attack_thrust INTEGER,
-    melee_attack_en_consumption INTEGER,
+    thrust INTEGER  NOT NULL,
+    upward_thrust INTEGER  NOT NULL,
+    upward_en_consumption INTEGER  NOT NULL,
+    qb_thrust INTEGER  NOT NULL,
+    qb_jet_duration REAL  NOT NULL,
+    qb_en_consumption INTEGER  NOT NULL,
+    qb_reload_time REAL  NOT NULL,
+    qb_reload_ideal_weight INTEGER  NOT NULL,
+    ab_thrust INTEGER  NOT NULL,
+    ab_en_consumption INTEGER  NOT NULL,
+    melee_attack_thrust INTEGER  NOT NULL,
+    melee_attack_en_consumption INTEGER  NOT NULL,
     FOREIGN KEY (part_id) REFERENCES parts(id))
 ''')
 
 # Таблица характеристик, присутствующих только у частей СУО
 c.execute('''CREATE TABLE fcs_stats (
     part_id INTEGER PRIMARY KEY,
-    close_assist INTEGER,   -- ДОБАВИТЬ CHECK > 130м
-    medium_assist INTEGER,  -- ДОБАВИТЬ CHECK < 130м AND > 260м
-    long_assist INTEGER,    -- ДОБАВИТЬ CHECK > 260м
-    missile_lock_correction INTEGER,
-    multi_lock_correction INTEGER,
+    close_assist INTEGER NOT NULL,
+    medium_assist INTEGER NOT NULL,
+    long_assist INTEGER NOT NULL,
+    missile_lock_correction INTEGER NOT NULL,
+    multi_lock_correction INTEGER NOT NULL,
     FOREIGN KEY (part_id) REFERENCES parts(id))
 ''')
 
 # Таблица характеристик, присутствующих только у частей генератора
 c.execute('''CREATE TABLE generator_stats (
     part_id INTEGER PRIMARY KEY,
-    en_capacity INTEGER,
-    en_recharge INTEGER,
-    supply_recovery INTEGER,
-    post_recovery_en_supply INTEGER,
-    en_output INTEGER,
+    en_capacity INTEGER NOT NULL,
+    en_recharge INTEGER NOT NULL,
+    supply_recovery INTEGER NOT NULL,
+    post_recovery_en_supply INTEGER NOT NULL,
+    en_output INTEGER NOT NULL,
     FOREIGN KEY (part_id) REFERENCES parts(id))
 ''')
 
@@ -191,15 +194,35 @@ parts_data = [(1, 'IB-C03H: HAL 826', 'Head', 'Rubicon Research Institute', 0, 3
               (53, '04-101 MIND ALPHA', 'Arms', 'ALLMIND', 0, 16960, 358, 'Arm parts developed by ALLMIND for model ACs. Designed as part of a research project to extend human sensory capabilities, with numerous optimizations to create an AC that, to the pilot, feels like an extension of the body.'),
               (54, 'LG-011 MELANDER', 'Arms', 'Balam', 0, 13650, 265, 'Medium-weight arm parts developed by Balam. The simple design and solid performance of this model make it suited for mass production—reflecting Balams strategy of overwhelming its enemies with its material superiority.'),              
               
-              (55, 'LG-011 MELANDER4', 'Legs', 'Balam', 0, 1000, 1000, 'text'),
+              (55, 'VE-42B', 'Legs', 'Arquebus ADD', 0, 46600, 824, 'Special tank parts designed by Arquebus ADD. Prioritizes hovering performance and forward propulsion to focus on aerial combat. During development, the specs were stolen and leaked by an independent mercenary.'),
+              (56, 'AL-J-121/RC JAILBREAK', 'Legs', 'BAWS', 0, 18560, 300, 'Junk. Originally bipedal leg parts for an old-generation AC developed by BAWS. RaD engineers infiltrated Institute City to make field repairs—just enough to make this part operable, but not enough to fix its weathered armor.'),
+              (57, 'IA-C01L: EPHEMERA', 'Legs', 'Rubicon Research Institute', 0, 15200, 398, 'Bipedal legs for EPHEMERA unpiloted ACs, developed long ago by the Rubicon Research Institute. An old development quirk allows for piloted operation, albeit with actuation translation that outstrips the capability of human nerves.'),
+              (58, '06-041 MIND ALPHA', 'Legs', 'ALLMIND', 0, 22110, 432, 'Bipedal legs developed by ALLMIND for model ACs. Designed as part of a research project to extend human sensory capabilities, with numerous optimization to create an AC that, to the pilot, feels like an extension of the body.'),
+              (59, 'EL-TL-11 FORTALEZA', 'Legs', 'Elcano', 0, 24650, 620, 'Lightweight tank parts developed by Elcano. Inspired by wheelchairs made for competitive sports, this product was an instant success with soldier who had lost the use of their legs in combat but still pined for the battlefield.'),
+              (60, 'VE-42A', 'Legs', 'Arquebus ADD', 0, 28950, 465, 'Heavyweight bipedal leg parts designed by Arquebus ADD. Incorporates cutting-edge technology to enable defiance of the PCA. This model utilizes hover movement or increased loading capacity and greatly improved stability.'),
+              (61, 'AL-J-121 BASHO', 'Legs', 'BAWS', 0, 20520, 300, 'Bipedal legs developed by BAWS for an old-generation AC. Said AC was one of the earliest models, developed to succeed MT-class machines, and moderns fans of such classic hardware are fond of its characteristic bulk.'),
+              (62, 'VP-422', 'Legs', 'Arquebus', 0, 17900, 387, 'Mass-produced bipedal leg parts developed by Arquebus. A number of refinements and updates have been made to the strong foundation laid by the preceding model, creating a masterpiece in the realm of second-generation AC parts.'),
+              (63, 'LG-011 MELANDER', 'Legs', 'Balam', 0, 18700, 365, 'Medium-weight bipedal leg parts developed by Balam. The simple design and solid performance of this model make it suited for mass production—reflecting Balams strategy of overwhelming its enemies with its material superiority.'),
+              (64, '2S-5000 DESSERT', 'Legs', 'RaD', 0, 25880, 420, 'Bipedal leg parts for a combat AC developed by RaD. though it was assembled from a patchwork of reclaimed resources, RaD mobilized its entire engineering team to fine-tune its design for formidable performance.'),
+              (65, 'LG-022T BORNEMISSZA', 'Legs', 'Balam', 0, 49800, 455, 'Heavyweight tank parts developed by Balam. Designed with the simple goal of turning ACs into tanks capable of carrying the heavy weapons manufactured by Dafeng Core Industries.'),
+              (66, 'LG-033M VERRILL', 'Legs', 'Balam', 0, 36200, 675, 'Tetrapod leg option developed by Balam. The design division was all but held at gunpoint to produce a model that satisfied the Redguns demand for a highly mobile AC platform also capable of supporting heavy weaponry.'),
+              (67, 'NACHTREIHER/42E', 'Legs', 'Schneider', 0, 14030, 462, 'Lightweight bipedal leg parts developed by Schneider. Schneider is a specialist in aerodynamic research, and this model reflects their experience with a light and highly agile build.'),
+              (68, 'LG-012 MELANDER C3', 'Legs', 'Balam', 0, 17210, 355, 'Custom bipedal leg parts developed by Balam. Altered to improve combat suitability, this model features a lighter basic frame enhanced with partial armor plating to maintain a modest weight.'),
+              (69, 'VP-424', 'Legs', 'Arquebus', 0, 31600, 760, 'Tetrapod leg parts developed by Arquebus, derived from an existing model. Intended for tetrapods deployed along-side Arquebuss bipedal and reverse-joint ACs, this model focuses on mobility to enable hovering-based fire support.'),
+              (70, '06-042 MIND BETA', 'Legs', 'ALLMIND', 0, 22000, 426, 'Alternative reverse-joint legs developed by ALLMIND. Marking a new approach, this part explores changes in human sensory perception though introduction of alien elements; in this case, animal-like digitigrade legs.'),
+              (71, 'RC-2000 SPRING CHICKEN', 'Legs', 'RaD', 0, 25890, 402, 'Heavyweight reverse-joint legs for scout ACs developed by RaD. Originally specced for resource transportation rather than combat, these legs are capable of leaping up to high positions while supporting a significant weight burden.'),
+              (72, 'KASUAR/42Z', 'Legs', 'Schneider', 0, 19060, 388, 'Lightweight reverse-joint legs developed by Schneider. These legs sacrifice stability and defensive performance to provide exceptional jumping performance, enabling agile transitions to aerial combat—as is Schneiders forte'),
+              (73, 'EL-TL-10 FIRMEZA', 'Legs', 'Elcano', 0, 11200, 378, 'Lightweight bipedal leg parts developed by Elcano. In keeping with Elcanos roots in producing and forging steel, this model exhibits craftsman-like flair, being light yet retaining high load capacity.'),
+              (74, '2C-3000 WRECKER', 'Legs', 'RaD', 0, 21680, 680, 'Bipedal leg parts for construction ACs developed by RaD. Specced for demolition work, this model make up for combat performance shortcomings with its sturdiness and outstanding loading capacity.'),
+              (74, '2C-2000 CRAWLER', 'Legs', 'RaD', 0, 16300, 280, 'Bipedal legs for scout ACs developed by RaD. Originally specced for surface surveys of astronomical objects, this model makes up for what it lacks in combat performance with a light energy footprint and commendable ease of use.'),
+              (74, 'DF-LG-08 TIAN-QIANG', 'Legs', 'Dafeng Core Industries', 0, 23600, 400, 'Bipdedal legs developed by Dafeng Core Industries for the heavyweight TIAN-QIANG AC. Built to embody Dafengs "stout tree, slender branches" philosophy, their weight is balanced by heavy upper legs and lighter lower legs.'),
               
-              (56, 'RF-024 TURNER', 'R-Arm', 'Balam', 0, 0, 0, ''),
               
-              (57, 'BST-G1/P10', 'Booster', 'Furlong', 0, 0, 0, ''),
+              (75, 'RF-024 TURNER', 'R-Arm', 'Balam', 0, 0, 0, ''),
               
-
+              (76, 'BST-G1/P10', 'Booster', 'Furlong', 0, 0, 0, ''),
               
-              (58, 'VP-20S', 'Generator', 'Arquebus', 0, 0, 0, '')]
+              (78, 'VP-20S', 'Generator', 'Arquebus', 0, 0, 0, '')]
 c.executemany("INSERT OR IGNORE INTO parts (id, name, category, manufacturer, price, weight, en_load, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", parts_data)
 conn.commit()
 
@@ -209,23 +232,23 @@ frame_stats_data = [(1, 930, 169, 182, 180, 436),
                     (4, 770, 174, 167, 181, 448),
                     (5, 1060, 179, 188, 178, 393),
 
-                    (6, 1450, 280, 240, 260, 350),
-                    (7, 1450, 280, 240, 260, 350),
-                    (8, 1450, 280, 240, 260, 350),
-                    (9, 1450, 280, 240, 260, 350),
-                    (10, 1450, 280, 240, 260, 350),
-                    (11, 1450, 280, 240, 260, 350),
-                    (12, 1450, 280, 240, 260, 350),
-                    (13, 1450, 280, 240, 260, 350),
-                    (14, 1450, 280, 240, 260, 350),
-                    (15, 1450, 280, 240, 260, 350),
-                    (16, 1450, 280, 240, 260, 350),
-                    (17, 1450, 280, 240, 260, 350),
-                    (18, 1450, 280, 240, 260, 350),
-                    (19, 1450, 280, 240, 260, 350),
-                    (21, 1450, 280, 240, 260, 350),
-                    (21, 1450, 280, 240, 260, 350),
-                    (22, 222, 222, 222, 222, 222)]
+                    (6, 0, 0, 0, 0, 0),
+                    (7, 0, 0, 0, 0, 0),
+                    (8, 0, 0, 0, 0, 0),
+                    (9, 0, 0, 0, 0, 0),
+                    (10, 0, 0, 0, 0, 0),
+                    (11, 0, 0, 0, 0, 0),
+                    (12, 0, 0, 0, 0, 0),
+                    (13, 0, 0, 0, 0, 0),
+                    (14, 0, 0, 0, 0, 0),
+                    (15, 0, 0, 0, 0, 0),
+                    (16, 0, 0, 0, 0, 0),
+                    (17, 0, 0, 0, 0, 0),
+                    (18, 0, 0, 0, 0, 0),
+                    (19, 0, 0, 0, 0, 0),
+                    (20, 0, 0, 0, 0, 0),
+                    (21, 0, 0, 0, 0, 0),
+                    (22, 0, 0, 0, 0, 0)]
 c.executemany("INSERT OR IGNORE INTO frame_stats (part_id, ap, anti_kinetic, anti_energy, anti_explosive, attitude_stability) VALUES (?, ?, ?, ?, ?, ?)", frame_stats_data)
 conn.commit()
 
@@ -235,28 +258,47 @@ head_stats_data = [(1, 125, 600, 16.8),
                     (4, 115, 450, 10.8),
                     (5, 104, 490, 12.6),
 
-                    (6, 1450, 280, 240),
-                    (7, 1450, 280, 240),
-                    (8, 1450, 280, 240),
-                    (9, 1450, 280, 240),
-                    (10, 1450, 280, 240),
-                    (11, 1450, 280, 240),
-                    (12, 1450, 280, 240),
-                    (13, 1450, 280, 240),
-                    (14, 1450, 280, 240),
-                    (15, 1450, 280, 240),
-                    (16, 1450, 280, 240),
-                    (17, 1450, 280, 240),
-                    (18, 1450, 280, 240),
-                    (19, 1450, 280, 240),
-                    (21, 1450, 280, 240),
-                    (21, 1450, 280, 240),
-                    (22, 2220, 222, 222)]
+                    (6, 0, 0, 0),
+                    (7, 0, 0, 0),
+                    (8, 0, 0, 0),
+                    (9, 0, 0, 0),
+                    (10, 0, 0, 0),
+                    (11, 0, 0, 0),
+                    (12, 0, 0, 0),
+                    (13, 0, 0, 0),
+                    (14, 0, 0, 0),
+                    (15, 0, 0, 0),
+                    (16, 0, 0, 0),
+                    (17, 0, 0, 0),
+                    (18, 0, 0, 0),
+                    (19, 0, 0, 0),
+                    (20, 0, 0, 0),
+                    (21, 0, 0, 0),
+                    (22, 0, 0, 0)]
 c.executemany("INSERT OR IGNORE INTO head_stats (part_id, system_recovery, scan_distance, scan_duration) VALUES (?, ?, ?, ?)", head_stats_data)
 conn.commit()
 
-# leg_stats_data = [(55, 52000, 'Bipedal')]
-# c.executemany("INSERT OR IGNORE INTO leg_stats (part_id, load_limit, leg_type) VALUES (?, ?, ?)", leg_stats_data)
+core_stats_data = [(23, 0, 0, 0),
+                   (24, 0, 0, 0),
+                   (25, 0, 0, 0),
+                   (26, 0, 0, 0),
+                   (27, 0, 0, 0),
+                   (28, 0, 0, 0),
+                   (29, 0, 0, 0),
+                   (30, 0, 0, 0),
+                   (31, 0, 0, 0),
+                   (32, 0, 0, 0),
+                   (33, 0, 0, 0),
+                   (34, 0, 0, 0),
+                   (35, 0, 0, 0),
+                   (36, 0, 0, 0),
+                   (37, 0, 0, 0),
+                   (38, 0, 0, 0)]
+c.executemany("INSERT OR IGNORE INTO core_stats (part_id, booster_efficiency_adj, generator_output_adj, generator_supply_adj) VALUES (?, ?, ?, ?)", core_stats_data)
+conn.commit()
+
+# leg_stats_data = [(55, 52000, 'Bipedal', 1, 1)]
+# c.executemany("INSERT OR IGNORE INTO leg_stats (part_id, load_limit, leg_type, jump_distance, jump_height) VALUES (?, ?, ?, ?, ?)", leg_stats_data)
 # conn.commit()
 
 # weapon_stats_data = [(4, 135, 110, 'Kinetic')]
@@ -271,7 +313,7 @@ conn.commit()
 # c.executemany("INSERT OR IGNORE INTO generator_stats (part_id, en_capacity, en_recharge, supply_recovery, post_recovery_en_supply, en_output) VALUES (?, ?, ?, ?, ?, ?)", generator_stats_data)
 # conn.commit()
 
-# Создание новых 
+# Создание новых таблиц
 c.execute('''CREATE TABLE full_head_stats AS
           SELECT p.id, p.name, p.category, p.manufacturer, p.price, p.weight, p.en_load, p.description,
           fs.ap, fs.anti_kinetic, fs.anti_energy, fs.anti_explosive, fs.attitude_stability,
@@ -280,7 +322,17 @@ c.execute('''CREATE TABLE full_head_stats AS
           LEFT JOIN frame_stats AS fs ON p.id = fs.part_id
           LEFT JOIN head_stats AS hs ON fs.part_id = hs.part_id
           WHERE p.id BETWEEN 1 AND 22
-          ''')
+''')
+
+c.execute('''CREATE TABLE full_core_stats AS
+          SELECT p.id, p.name, p.category, p.manufacturer, p.price, p.weight, p.en_load, p.description,
+          fs.ap, fs.anti_kinetic, fs.anti_energy, fs.anti_explosive, fs.attitude_stability,
+          cs.booster_efficiency_adj, cs.generator_output_adj, cs.generator_supply_adj
+          FROM parts AS p
+          LEFT JOIN frame_stats AS fs ON p.id = fs.part_id
+          LEFT JOIN core_stats AS cs ON fs.part_id = cs.part_id
+          WHERE p.id BETWEEN 23 AND 38
+''')
 
 
 conn.close()
