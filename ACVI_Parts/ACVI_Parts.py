@@ -10,18 +10,20 @@ c.execute('''PRAGMA foreign_keys = ON''')
 c.execute('''DROP TABLE IF EXISTS generator_stats''')
 c.execute('''DROP TABLE IF EXISTS fcs_stats''')
 c.execute('''DROP TABLE IF EXISTS booster_stats''')
+c.execute('''DROP TABLE IF EXISTS weapon_stats''')
+
 c.execute('''DROP TABLE IF EXISTS leg_stats''')
 c.execute('''DROP TABLE IF EXISTS arm_stats''')
 c.execute('''DROP TABLE IF EXISTS core_stats''')
 c.execute('''DROP TABLE IF EXISTS head_stats''')
+
 c.execute('''DROP TABLE IF EXISTS frame_stats''')
-c.execute('''DROP TABLE IF EXISTS weapon_stats''')
 c.execute('''DROP TABLE IF EXISTS parts''')
 
-c.execute('''DROP TABLE IF EXISTS full_head_stats''')
-c.execute('''DROP TABLE IF EXISTS full_core_stats''')
-c.execute('''DROP TABLE IF EXISTS full_arms_stats''')
-c.execute('''DROP TABLE IF EXISTS full_legs_stats''')
+c.execute('''DROP VIEW IF EXISTS full_head_stats''')
+c.execute('''DROP VIEW IF EXISTS full_core_stats''')
+c.execute('''DROP VIEW IF EXISTS full_arms_stats''')
+c.execute('''DROP VIEW IF EXISTS full_legs_stats''')
 
 
 # Таблицы
@@ -29,8 +31,8 @@ c.execute('''DROP TABLE IF EXISTS full_legs_stats''')
 c.execute('''CREATE TABLE IF NOT EXISTS parts (
           id INTEGER PRIMARY KEY,
           name TEXT NOT NULL UNIQUE,
-          category TEXT NOT NULL, -- ДОБАВИТЬ IN 'Head', 'Core', 'Arms', 'Legs', 'R-Arm', 'L-Arm', 'R-Back', 'L-Back', 'Booster', 'FCS', 'Generator'
-          manufacturer TEXT, -- ДОБАВИТЬ IN Balam, Dafeng Core Industries, RaD, Rubicon Research Institute, ALLMIND, Arquebus ADD, Arquebus, BAWS, Schneider, Elcano
+          category TEXT NOT NULL CHECK (category IN ('Head', 'Core', 'Arms', 'Legs', 'R-Arm', 'L-Arm', 'R-Back', 'L-Back', 'Booster', 'FCS', 'Generator')),
+          manufacturer TEXT CHECK (manufacturer IN ('Balam', 'Dafeng Core Industries', 'RaD', 'Rubicon Research Institute', 'ALLMIND', 'Arquebus ADD', 'Arquebus', 'BAWS', 'Schneider', 'Elcano')),
           price INTEGER NOT NULL,
           weight INTEGER NOT NULL,
           en_load INTEGER NOT NULL,
@@ -39,65 +41,65 @@ c.execute('''CREATE TABLE IF NOT EXISTS parts (
 
 # Таблица характеристик, присутствующих только у оружия
 c.execute('''CREATE TABLE IF NOT EXISTS weapon_stats (
-            part_id INTEGER PRIMARY KEY,
+            weapon_id INTEGER PRIMARY KEY,
             attack_power INTEGER,
             impact INTEGER,
-            damage_type TEXT, --ДОБАВИТЬ IN Kinetic, Energy, Explosion, Coral
-            FOREIGN KEY (part_id) REFERENCES parts(id))
+            damage_type TEXT CHECK (damage_type IN ('Kinetic', 'Energy', 'Explosion', 'Coral')),
+            FOREIGN KEY (weapon_id) REFERENCES parts(id))
 ''')
 
 # Промежуточная таблица характеристик, присутствующих у всех частей каркаса
 c.execute('''CREATE TABLE IF NOT EXISTS frame_stats (
-    part_id INTEGER PRIMARY KEY,
+    frame_id INTEGER PRIMARY KEY,
     ap INTEGER,
     anti_kinetic INTEGER,
     anti_energy INTEGER,
     anti_explosive INTEGER,
     attitude_stability INTEGER,
-    FOREIGN KEY (part_id) REFERENCES parts(id))
+    FOREIGN KEY (frame_id) REFERENCES parts(id))
 ''')
 
 # Таблица характеристик, присутствующих только у частей голов
-c.execute('''CREATE TABLE head_stats (
-    part_id INTEGER PRIMARY KEY,
+c.execute('''CREATE TABLE IF NOT EXISTS head_stats (
+    head_id INTEGER PRIMARY KEY,
     system_recovery INTEGER,
     scan_distance INTEGER,
     scan_duration REAL,
-    FOREIGN KEY (part_id) REFERENCES frame_stats(part_id))
+    FOREIGN KEY (head_id) REFERENCES frame_stats(frame_id))
 ''')
 
 # Таблица характеристик, присутствующих только у частей корпуса
-c.execute('''CREATE TABLE core_stats (
-    part_id INTEGER PRIMARY KEY,
+c.execute('''CREATE TABLE IF NOT EXISTS core_stats (
+    core_id INTEGER PRIMARY KEY,
     booster_efficiency_adj INTEGER,
     generator_output_adj INTEGER,
     generator_supply_adj INTEGER,
-    FOREIGN KEY (part_id) REFERENCES frame_stats(part_id))
+    FOREIGN KEY (core_id) REFERENCES frame_stats(frame_id))
 ''')
 
 # Таблица характеристик, присутствующих только у частей рук
-c.execute('''CREATE TABLE arm_stats (
-    part_id INTEGER PRIMARY KEY,
+c.execute('''CREATE TABLE IF NOT EXISTS arm_stats (
+    arm_id INTEGER PRIMARY KEY,
     arms_load_limit INTEGER,
     recoil_control INTEGER,
     firearms_specialization INTEGER,
     melee_specialization INTEGER,
-    FOREIGN KEY (part_id) REFERENCES frame_stats(part_id))
+    FOREIGN KEY (arm_id) REFERENCES frame_stats(frame_id))
 ''')
 
 # Таблица характеристик, характерных только для деталей ног
-c.execute('''CREATE TABLE leg_stats (
-    part_id INTEGER PRIMARY KEY,
+c.execute('''CREATE TABLE IF NOT EXISTS leg_stats (
+    leg_id INTEGER PRIMARY KEY,
     load_limit INTEGER NOT NULL,
     leg_type TEXT CHECK (leg_type IN ('Bipedal', 'Reverse Joint', 'Tetrapod', 'Tank', 'Hover')),
-    jump_distance INTEGER, --jump_distance и jump_height моuen быть NULL значением
+    jump_distance INTEGER, --поля jump_distance и jump_height могут быть NULL значением
     jump_height INTEGER, --Ибо ноги типа tank и hover не могут прыгать
-    FOREIGN KEY (part_id) REFERENCES frame_stats(part_id))
+    FOREIGN KEY (leg_id) REFERENCES frame_stats(frame_id))
 ''')
 
 # Таблица характеристик, присутствующих только у частей ускорителей
-c.execute('''CREATE TABLE booster_stats (
-    part_id INTEGER PRIMARY KEY,
+c.execute('''CREATE TABLE IF NOT EXISTS booster_stats (
+    booster_id INTEGER PRIMARY KEY,
     thrust INTEGER  NOT NULL,
     upward_thrust INTEGER  NOT NULL,
     upward_en_consumption INTEGER  NOT NULL,
@@ -110,34 +112,34 @@ c.execute('''CREATE TABLE booster_stats (
     ab_en_consumption INTEGER  NOT NULL,
     melee_attack_thrust INTEGER  NOT NULL,
     melee_attack_en_consumption INTEGER  NOT NULL,
-    FOREIGN KEY (part_id) REFERENCES parts(id))
+    FOREIGN KEY (booster_id) REFERENCES parts(id))
 ''')
 
 # Таблица характеристик, присутствующих только у частей СУО
-c.execute('''CREATE TABLE fcs_stats (
-    part_id INTEGER PRIMARY KEY,
+c.execute('''CREATE TABLE IF NOT EXISTS fcs_stats (
+    fcs_id INTEGER PRIMARY KEY,
     close_assist INTEGER NOT NULL,
     medium_assist INTEGER NOT NULL,
     long_assist INTEGER NOT NULL,
     missile_lock_correction INTEGER NOT NULL,
     multi_lock_correction INTEGER NOT NULL,
-    FOREIGN KEY (part_id) REFERENCES parts(id))
+    FOREIGN KEY (fcs_id) REFERENCES parts(id))
 ''')
 
 # Таблица характеристик, присутствующих только у частей генератора
-c.execute('''CREATE TABLE generator_stats (
-    part_id INTEGER PRIMARY KEY,
+c.execute('''CREATE TABLE IF NOT EXISTS generator_stats (
+    generator_id INTEGER PRIMARY KEY,
     en_capacity INTEGER NOT NULL,
     en_recharge INTEGER NOT NULL,
     supply_recovery INTEGER NOT NULL,
     post_recovery_en_supply INTEGER NOT NULL,
     en_output INTEGER NOT NULL,
-    FOREIGN KEY (part_id) REFERENCES parts(id))
+    FOREIGN KEY (generator_id) REFERENCES parts(id))
 ''')
 
 
 # Данные
-parts_data = [(1, 'IB-C03H: HAL 826', 'Head', 'Rubicon Research Institute', 0, 3760, 215, 'Head part for the HAL 826 piloted AC, developed long ago by the Rubicon Research Institute. The last of the Ibis Series and the only piloted Obis craft, it was built to be the final safety valve to prevent a Coral Collapse.'),
+parts_data = [(1, 'IB-C03H: HAL 826', 'Head', 'Rubicon Research Institute', 0, 3760, 215, 'Head part for the HAL 826 piloted AC, developed long ago by the Rubicon Research Institute. The last of the Ibis Series and the only piloted Ibis craft, it was built to be the final safety valve to prevent a Coral Collapse.'),
               (2, '20-082 MIND BETA', 'Head', 'ALLMIND', 0, 3460, 128, 'Model head part developed by ALLMIND. In line with a change in approach, this part maximized stability at the expense of armor robustness.'),
               (3, '20-081 MIND ALPHA', 'Head', 'ALLMIND', 0, 3350, 142, 'Head part developed my ALLMIND for model ACs. Designed as part of a research project to extend human sensory capabilities, with numberous optimizations to create an AC that, to the pilot, feels like an extension of the body.'),
               (4, 'HC-2000/BC SHADE EYE', 'Head', 'RaD', 0, 3090, 163, 'Custom part derived from the scout AC head developed by RaD. Comprehensively rebuilt for combat by an anonymous independent mercenary group, this model takes some steps forward but sacrifices the minimalism of its predecessor.'),
@@ -146,7 +148,7 @@ parts_data = [(1, 'IB-C03H: HAL 826', 'Head', 'Rubicon Research Institute', 0, 3
               (7, 'HD-033M VERRILL', 'Head', 'Balam', 0, 3830, 240, 'Retrofitted head part developed by Balam. This high-end model is a strong performer with a hefty energy footprint, and features an intimidating spider-eye design chosen to suit the tastes of the Redguns commander.'),
               (8, 'AH-J-124/RC JAILBREAK', 'Head', 'BAWS', 0, 4250, 95, 'Junk. Originally a head part for an old-generation AC developed by BAWS. RaD engineers infiltrated Institute City to make field repairs—just enough to make this part operable, but not enough to fix its weathered armor.'),
               (9, 'HS-5000 APPETIZER', 'Head', 'RaD', 0, 3000, 103, 'Head part for a combat AC developed by RaD. though it was assembled from a patchwork of reclaimed resources, RaD mobilized its entire engineering team to fine-tune its design for formidable performance.'),
-              (10, 'IA-C01H: EPHEMERA', 'Head', 'Rubicon Research Institute', 0, 4330, 235, 'Head part for the EPHEMERA unpiloted ACs, devloped long ago by the Rubicon Research Institute. An old development quirk allows for piloted operation, but one should not any concessions for the limit of human sight.'),
+              (10, 'IA-C01H: EPHEMERA', 'Head', 'Rubicon Research Institute', 0, 4330, 235, 'Head part for the EPHEMERA unpiloted ACs, developed long ago by the Rubicon Research Institute. An old development quirk allows for piloted operation, but one should not any concessions for the limit of human sight.'),
               (11, 'EL-PH-00 ALBA', 'Head', 'Elcano', 0, 2600, 205, 'A new head part developed by Elcano. This model utilizes technology recovered from Furlong Dynamics to achieve improved overall balance and precise AC control.'),
               (12, 'VE-44B', 'Head', 'Arquebus ADD', 0, 4320, 265, 'Special head part designed by Arquebus ADD. Engineered to accommodate a proposal from V.VII, this model maximizes scanning performance, positioning its overall performance close to that of a surveillance-orientated concept model.'),
               (13, 'VP-44S', 'Head', 'Arquebus', 0, 3080, 148, 'Mass-produced head part developed by Arquebus. A number of refinements and updates have been made to the strong foundation laid by the preceding model, creating a masterpiece in the realm of second-generation AC parts.'),
@@ -178,7 +180,7 @@ parts_data = [(1, 'IB-C03H: HAL 826', 'Head', 'Rubicon Research Institute', 0, 3
               (38, 'CC-2000 ORBITER', 'Core', 'RaD', 0, 12650, 267, 'Core part for scout ACs developed by RaD. Originally specced for extravehicular activity in space, this model makes up for what it lacks in combat performance with a light energy footprint and commendable ease of use.'),
 
               (39, 'VP-46D', 'Arms', 'Arquebus', 0, 10990, 248, 'Arm parts developed by Arquebus, derived from an existing model. Engineered in anticipation of regular use by the Vespers, this model features further improvements to performance.'),
-              (40, 'IA-C01A: EPHEMERA', 'Arms', 'BalRubicon Research Instituteam', 0, 12700, 312, 'Arm parts for the EPHEMERA unpiloted ACs, developed long ago by the Rubicon Research Institute. An old development quirk allows for piloted operation, albeit with actuation translation that outstrips the capability of human nerves.'),
+              (40, 'IA-C01A: EPHEMERA', 'Arms', 'Rubicon Research Institute', 0, 12700, 312, 'Arm parts for the EPHEMERA unpiloted ACs, developed long ago by the Rubicon Research Institute. An old development quirk allows for piloted operation, albeit with actuation translation that outstrips the capability of human nerves.'),
               (41, 'AS-5000 SALAD', 'Arms', 'RaD', 0, 20940, 356, 'Arm parts for a combat AC developed by RaD. though it was assembled from a patchwork of reclaimed resources, RaD mobilized its entire engineering team to fine-tune its design for formidable performance.'),
               (42, 'AA-J-123/RC JAILBREAK', 'Arms', 'BAWS', 0, 8480, 210, 'Junk. Originally arm parts for an old-generation AC developed by BAWS. RaD engineers infiltrated Institute City to make field repairs—just enough to make this part operable, but not enough to fix its weathered armor.'),
               (43, 'VE-46A', 'Arms', 'Arquebus ADD', 0, 22210, 380, 'Heavyweight arm parts designed by Arquebus ADD. Incorporates cutting-edge technology to enable defiance of the PCA. This models distinctive curved armor plating proved solid defence against damage of all kinds.'),
@@ -192,7 +194,7 @@ parts_data = [(1, 'IB-C03H: HAL 826', 'Head', 'Rubicon Research Institute', 0, 3
               (51, 'AC-2000 TOOL ARM', 'Arms', 'Balam', 0, 11300, 216, 'Arm parts for scout ACs developed by RaD. Originally specced for recovering scrap, this model makes up for what it lacks in combat performance with a light energy footprint and commendable ease of use.'),
               (52, 'AA-J-123 BASHO', 'Arms', 'BAWS', 0, 10480, 210, 'Arm parts developed by BAWS for an old-generation AC. Said AC was one of the earliest models, developed to succeed MT-class machines, and modern fans of such classic hardware are fond of its characteristic bulk.'),
               (53, '04-101 MIND ALPHA', 'Arms', 'ALLMIND', 0, 16960, 358, 'Arm parts developed by ALLMIND for model ACs. Designed as part of a research project to extend human sensory capabilities, with numerous optimizations to create an AC that, to the pilot, feels like an extension of the body.'),
-              (54, 'LG-011 MELANDER', 'Arms', 'Balam', 0, 13650, 265, 'Medium-weight arm parts developed by Balam. The simple design and solid performance of this model make it suited for mass production—reflecting Balams strategy of overwhelming its enemies with its material superiority.'),              
+              (54, 'AR-011 MELANDER', 'Arms', 'Balam', 0, 13650, 265, 'Medium-weight arm parts developed by Balam. The simple design and solid performance of this model make it suited for mass production—reflecting Balams strategy of overwhelming its enemies with its material superiority.'),              
               
               (55, 'VE-42B', 'Legs', 'Arquebus ADD', 0, 46600, 824, 'Special tank parts designed by Arquebus ADD. Prioritizes hovering performance and forward propulsion to focus on aerial combat. During development, the specs were stolen and leaked by an independent mercenary.'),
               (56, 'AL-J-121/RC JAILBREAK', 'Legs', 'BAWS', 0, 18560, 300, 'Junk. Originally bipedal leg parts for an old-generation AC developed by BAWS. RaD engineers infiltrated Institute City to make field repairs—just enough to make this part operable, but not enough to fix its weathered armor.'),
@@ -214,16 +216,11 @@ parts_data = [(1, 'IB-C03H: HAL 826', 'Head', 'Rubicon Research Institute', 0, 3
               (72, 'KASUAR/42Z', 'Legs', 'Schneider', 0, 19060, 388, 'Lightweight reverse-joint legs developed by Schneider. These legs sacrifice stability and defensive performance to provide exceptional jumping performance, enabling agile transitions to aerial combat—as is Schneiders forte'),
               (73, 'EL-TL-10 FIRMEZA', 'Legs', 'Elcano', 0, 11200, 378, 'Lightweight bipedal leg parts developed by Elcano. In keeping with Elcanos roots in producing and forging steel, this model exhibits craftsman-like flair, being light yet retaining high load capacity.'),
               (74, '2C-3000 WRECKER', 'Legs', 'RaD', 0, 21680, 680, 'Bipedal leg parts for construction ACs developed by RaD. Specced for demolition work, this model make up for combat performance shortcomings with its sturdiness and outstanding loading capacity.'),
-              (74, '2C-2000 CRAWLER', 'Legs', 'RaD', 0, 16300, 280, 'Bipedal legs for scout ACs developed by RaD. Originally specced for surface surveys of astronomical objects, this model makes up for what it lacks in combat performance with a light energy footprint and commendable ease of use.'),
-              (74, 'DF-LG-08 TIAN-QIANG', 'Legs', 'Dafeng Core Industries', 0, 23600, 400, 'Bipdedal legs developed by Dafeng Core Industries for the heavyweight TIAN-QIANG AC. Built to embody Dafengs "stout tree, slender branches" philosophy, their weight is balanced by heavy upper legs and lighter lower legs.'),
-              
-              
-              (75, 'RF-024 TURNER', 'R-Arm', 'Balam', 0, 0, 0, ''),
-              
-              (76, 'BST-G1/P10', 'Booster', 'Furlong', 0, 0, 0, ''),
-              
-              (78, 'VP-20S', 'Generator', 'Arquebus', 0, 0, 0, '')]
-c.executemany("INSERT OR IGNORE INTO parts (id, name, category, manufacturer, price, weight, en_load, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", parts_data)
+              (75, '2C-2000 CRAWLER', 'Legs', 'RaD', 0, 16300, 280, 'Bipedal legs for scout ACs developed by RaD. Originally specced for surface surveys of astronomical objects, this model makes up for what it lacks in combat performance with a light energy footprint and commendable ease of use.'),
+              (76, 'DF-LG-08 TIAN-QIANG', 'Legs', 'Dafeng Core Industries', 0, 23600, 400, 'Bipdedal legs developed by Dafeng Core Industries for the heavyweight TIAN-QIANG AC. Built to embody Dafengs "stout tree, slender branches" philosophy, their weight is balanced by heavy upper legs and lighter lower legs.'),
+              (77, 'Test', 'Booster', 'Balam', 0, 0, 0, 'Test')]
+
+c.executemany("INSERT INTO parts (id, name, category, manufacturer, price, weight, en_load, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", parts_data)
 conn.commit()
 
 frame_stats_data = [(1, 930, 169, 182, 180, 436),
@@ -248,15 +245,72 @@ frame_stats_data = [(1, 930, 169, 182, 180, 436),
                     (19, 0, 0, 0, 0, 0),
                     (20, 0, 0, 0, 0, 0),
                     (21, 0, 0, 0, 0, 0),
-                    (22, 0, 0, 0, 0, 0)]
-c.executemany("INSERT OR IGNORE INTO frame_stats (part_id, ap, anti_kinetic, anti_energy, anti_explosive, attitude_stability) VALUES (?, ?, ?, ?, ?, ?)", frame_stats_data)
+                    (22, 0, 0, 0, 0, 0),
+
+                    (23, 0, 0, 0, 0, 0),
+                    (24, 0, 0, 0, 0, 0),
+                    (25, 0, 0, 0, 0, 0),
+                    (26, 0, 0, 0, 0, 0),
+                    (27, 0, 0, 0, 0, 0),
+                    (28, 0, 0, 0, 0, 0),
+                    (29, 0, 0, 0, 0, 0),
+                    (30, 0, 0, 0, 0, 0),
+                    (31, 0, 0, 0, 0, 0),
+                    (32, 0, 0, 0, 0, 0),
+                    (33, 0, 0, 0, 0, 0),
+                    (34, 0, 0, 0, 0, 0),
+                    (35, 0, 0, 0, 0, 0),
+                    (36, 0, 0, 0, 0, 0),
+                    (37, 0, 0, 0, 0, 0),
+                    (38, 0, 0, 0, 0, 0),
+
+                    (39, 0, 0, 0, 0, 0),
+                    (40, 0, 0, 0, 0, 0),
+                    (41, 0, 0, 0, 0, 0),
+                    (42, 0, 0, 0, 0, 0),
+                    (43, 0, 0, 0, 0, 0),
+                    (44, 0, 0, 0, 0, 0),
+                    (45, 0, 0, 0, 0, 0),
+                    (46, 0, 0, 0, 0, 0),
+                    (47, 0, 0, 0, 0, 0),
+                    (48, 0, 0, 0, 0, 0),
+                    (49, 0, 0, 0, 0, 0),
+                    (50, 0, 0, 0, 0, 0),
+                    (51, 0, 0, 0, 0, 0),
+                    (52, 0, 0, 0, 0, 0),
+                    (53, 0, 0, 0, 0, 0),
+                    (54, 0, 0, 0, 0, 0),
+
+                    (55, 0, 0, 0, 0, 0),
+                    (56, 0, 0, 0, 0, 0),
+                    (57, 0, 0, 0, 0, 0),
+                    (58, 0, 0, 0, 0, 0),
+                    (59, 0, 0, 0, 0, 0),
+                    (60, 0, 0, 0, 0, 0),
+                    (61, 0, 0, 0, 0, 0),
+                    (62, 0, 0, 0, 0, 0),
+                    (63, 0, 0, 0, 0, 0),
+                    (64, 0, 0, 0, 0, 0),
+                    (65, 0, 0, 0, 0, 0),
+                    (66, 0, 0, 0, 0, 0),
+                    (67, 0, 0, 0, 0, 0),
+                    (68, 0, 0, 0, 0, 0),
+                    (69, 0, 0, 0, 0, 0),
+                    (70, 0, 0, 0, 0, 0),
+                    (71, 0, 0, 0, 0, 0),
+                    (72, 0, 0, 0, 0, 0),
+                    (73, 0, 0, 0, 0, 0),
+                    (74, 0, 0, 0, 0, 0),
+                    (75, 0, 0, 0, 0, 0),
+                    (76, 0, 0, 0, 0, 0)]
+c.executemany("INSERT INTO frame_stats (frame_id, ap, anti_kinetic, anti_energy, anti_explosive, attitude_stability) VALUES (?, ?, ?, ?, ?, ?)", frame_stats_data)
 conn.commit()
 
 head_stats_data = [(1, 125, 600, 16.8),
-                    (2, 116, 540, 12.0),
-                    (3, 103, 320, 6.0),
-                    (4, 115, 450, 10.8),
-                    (5, 104, 490, 12.6),
+                   (2, 116, 540, 12.0),
+                   (3, 103, 320, 6.0),
+                   (4, 115, 450, 10.8),
+                   (5, 104, 490, 12.6),
 
                     (6, 0, 0, 0),
                     (7, 0, 0, 0),
@@ -275,7 +329,7 @@ head_stats_data = [(1, 125, 600, 16.8),
                     (20, 0, 0, 0),
                     (21, 0, 0, 0),
                     (22, 0, 0, 0)]
-c.executemany("INSERT OR IGNORE INTO head_stats (part_id, system_recovery, scan_distance, scan_duration) VALUES (?, ?, ?, ?)", head_stats_data)
+c.executemany("INSERT INTO head_stats (head_id, system_recovery, scan_distance, scan_duration) VALUES (?, ?, ?, ?)", head_stats_data)
 conn.commit()
 
 core_stats_data = [(23, 0, 0, 0),
@@ -294,45 +348,96 @@ core_stats_data = [(23, 0, 0, 0),
                    (36, 0, 0, 0),
                    (37, 0, 0, 0),
                    (38, 0, 0, 0)]
-c.executemany("INSERT OR IGNORE INTO core_stats (part_id, booster_efficiency_adj, generator_output_adj, generator_supply_adj) VALUES (?, ?, ?, ?)", core_stats_data)
+c.executemany("INSERT INTO core_stats (core_id, booster_efficiency_adj, generator_output_adj, generator_supply_adj) VALUES (?, ?, ?, ?)", core_stats_data)
 conn.commit()
 
-# leg_stats_data = [(55, 52000, 'Bipedal', 1, 1)]
-# c.executemany("INSERT OR IGNORE INTO leg_stats (part_id, load_limit, leg_type, jump_distance, jump_height) VALUES (?, ?, ?, ?, ?)", leg_stats_data)
-# conn.commit()
+arm_stats_data = [()]
+
+leg_stats_data = [(55, 52000, 'Bipedal', 0, 0),
+                  (56, 0, 'Bipedal', 0, 0),
+                  (57, 0, 'Bipedal', 0, 0),
+                  (58, 0, 'Bipedal', 0, 0),
+                  (59, 0, 'Bipedal', 0, 0),
+                  (60, 0, 'Bipedal', 0, 0),
+                  (61, 0, 'Bipedal', 0, 0),
+                  (62, 0, 'Bipedal', 0, 0),
+                  (63, 0, 'Bipedal', 0, 0),
+                  (64, 0, 'Bipedal', 0, 0),
+                  (65, 0, 'Bipedal', 0, 0),
+                  (66, 0, 'Bipedal', 0, 0),
+                  (67, 0, 'Bipedal', 0, 0),
+                  (68, 0, 'Bipedal', 0, 0),
+                  (69, 0, 'Bipedal', 0, 0),
+                  (70, 0, 'Bipedal', 0, 0),
+                  (71, 0, 'Bipedal', 0, 0),
+                  (72, 0, 'Bipedal', 0, 0),
+                  (73, 0, 'Bipedal', 0, 0),
+                  (74, 0, 'Bipedal', 0, 0),
+                  (75, 0, 'Bipedal', 0, 0),
+                  (76, 0, 'Bipedal', 0, 0)]
+c.executemany("INSERT INTO leg_stats (leg_id, load_limit, leg_type, jump_distance, jump_height) VALUES (?, ?, ?, ?, ?)", leg_stats_data)
+conn.commit()
 
 # weapon_stats_data = [(4, 135, 110, 'Kinetic')]
-# c.executemany("INSERT OR IGNORE INTO weapon_stats (part_id, attack_power, impact, damage_type) VALUES (?, ?, ?, ?)", weapon_stats_data)
+# c.executemany("INSERT INTO weapon_stats (weapon_id, attack_power, impact, damage_type) VALUES (?, ?, ?, ?)", weapon_stats_data)
 # conn.commit()
 
 # booster_stats_data = [(5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)]
-# c.executemany("INSERT OR IGNORE INTO booster_stats (part_id, thrust, upward_thrust, upward_en_consumption, qb_thrust, qb_jet_duration, qb_en_consumption, qb_reload_time, qb_reload_ideal_weight, ab_thrust, ab_en_consumption, melee_attack_thrust, melee_attack_en_consumption) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", booster_stats_data)
+# c.executemany("INSERT INTO booster_stats (booster_id, thrust, upward_thrust, upward_en_consumption, qb_thrust, qb_jet_duration, qb_en_consumption, qb_reload_time, qb_reload_ideal_weight, ab_thrust, ab_en_consumption, melee_attack_thrust, melee_attack_en_consumption) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", booster_stats_data)
 # conn.commit()
 
 # generator_stats_data = [(6, 2620, 892, 434, 1200, 3400)]
-# c.executemany("INSERT OR IGNORE INTO generator_stats (part_id, en_capacity, en_recharge, supply_recovery, post_recovery_en_supply, en_output) VALUES (?, ?, ?, ?, ?, ?)", generator_stats_data)
+# c.executemany("INSERT INTO generator_stats (generator_id, en_capacity, en_recharge, supply_recovery, post_recovery_en_supply, en_output) VALUES (?, ?, ?, ?, ?, ?)", generator_stats_data)
 # conn.commit()
 
 # Создание новых таблиц
-c.execute('''CREATE TABLE full_head_stats AS
+c.execute('''CREATE VIEW full_head_stats AS
           SELECT p.id, p.name, p.category, p.manufacturer, p.price, p.weight, p.en_load, p.description,
           fs.ap, fs.anti_kinetic, fs.anti_energy, fs.anti_explosive, fs.attitude_stability,
           hs.system_recovery, hs.scan_distance, hs.scan_duration
           FROM parts AS p
-          LEFT JOIN frame_stats AS fs ON p.id = fs.part_id
-          LEFT JOIN head_stats AS hs ON fs.part_id = hs.part_id
+          LEFT JOIN frame_stats AS fs ON p.id = fs.frame_id
+          LEFT JOIN head_stats AS hs ON fs.frame_id = hs.head_id
           WHERE p.id BETWEEN 1 AND 22
 ''')
 
-c.execute('''CREATE TABLE full_core_stats AS
+c.execute('''CREATE VIEW full_core_stats AS
           SELECT p.id, p.name, p.category, p.manufacturer, p.price, p.weight, p.en_load, p.description,
           fs.ap, fs.anti_kinetic, fs.anti_energy, fs.anti_explosive, fs.attitude_stability,
           cs.booster_efficiency_adj, cs.generator_output_adj, cs.generator_supply_adj
           FROM parts AS p
-          LEFT JOIN frame_stats AS fs ON p.id = fs.part_id
-          LEFT JOIN core_stats AS cs ON fs.part_id = cs.part_id
+          LEFT JOIN frame_stats AS fs ON p.id = fs.frame_id
+          LEFT JOIN core_stats AS cs ON fs.frame_id = cs.core_id
           WHERE p.id BETWEEN 23 AND 38
 ''')
 
+c.execute('''CREATE VIEW full_arm_stats AS
+          SELECT p.id, p.name, p.category, p.manufacturer, p.price, p.weight, p.en_load, p.description,
+          fs.ap, fs.anti_kinetic, fs.anti_energy, fs.anti_explosive, fs.attitude_stability,
+          rs.arms_load_limit, rs.recoil_control, rs.firearms_specialization, rs.melee_specialization
+          FROM parts AS p
+          LEFT JOIN frame_stats AS fs ON p.id = fs.frame_id
+          LEFT JOIN arm_stats AS rs ON fs.frame_id = rs.arm_id
+          WHERE p.id BETWEEN 39 AND 54
+''')
+
+c.execute('''CREATE VIEW full_leg_stats AS
+          SELECT p.id, p.name, p.category, p.manufacturer, p.price, p.weight, p.en_load, p.description,
+          fs.ap, fs.anti_kinetic, fs.anti_energy, fs.anti_explosive, fs.attitude_stability,
+          ls.load_limit, ls.leg_type, ls.jump_distance, ls.jump_height
+          FROM parts AS p
+          LEFT JOIN frame_stats AS fs ON p.id = fs.frame_id
+          LEFT JOIN leg_stats AS ls ON fs.frame_id = ls.leg_id
+          WHERE p.id BETWEEN 39 AND 54
+''')
+
+
+# c.execute("SELECT id FROM parts")
+# existing_ids = {row[0] for row in c.fetchall()}
+# missing_ids = [item[0] for item in frame_stats_data if item[0] not in existing_ids]
+# if missing_ids:
+#     print(f"Ошибка! Эти ID отсутствуют в таблице parts: {missing_ids}")
+# else:
+#     print("С ID все в порядке. Проблема в другом.")
 
 conn.close()
