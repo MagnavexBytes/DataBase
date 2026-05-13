@@ -218,6 +218,7 @@ parts_data = [(1, 'IB-C03H: HAL 826', 'Head', 'Rubicon Research Institute', 0, 3
               (74, '2C-3000 WRECKER', 'Legs', 'RaD', 0, 21680, 680, 'Bipedal leg parts for construction ACs developed by RaD. Specced for demolition work, this model make up for combat performance shortcomings with its sturdiness and outstanding loading capacity.'),
               (75, '2C-2000 CRAWLER', 'Legs', 'RaD', 0, 16300, 280, 'Bipedal legs for scout ACs developed by RaD. Originally specced for surface surveys of astronomical objects, this model makes up for what it lacks in combat performance with a light energy footprint and commendable ease of use.'),
               (76, 'DF-LG-08 TIAN-QIANG', 'Legs', 'Dafeng Core Industries', 0, 23600, 400, 'Bipdedal legs developed by Dafeng Core Industries for the heavyweight TIAN-QIANG AC. Built to embody Dafengs "stout tree, slender branches" philosophy, their weight is balanced by heavy upper legs and lighter lower legs.'),
+              
               (77, 'Test', 'Booster', 'Balam', 0, 0, 0, 'Test')]
 
 c.executemany("INSERT INTO parts (id, name, category, manufacturer, price, weight, en_load, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", parts_data)
@@ -311,70 +312,86 @@ head_stats_data = [(1, 125, 600, 16.8),
                    (3, 103, 320, 6.0),
                    (4, 115, 450, 10.8),
                    (5, 104, 490, 12.6),
-
-                    (6, 0, 0, 0),
-                    (7, 0, 0, 0),
-                    (8, 0, 0, 0),
-                    (9, 0, 0, 0),
-                    (10, 0, 0, 0),
-                    (11, 0, 0, 0),
-                    (12, 0, 0, 0),
-                    (13, 0, 0, 0),
-                    (14, 0, 0, 0),
-                    (15, 0, 0, 0),
-                    (16, 0, 0, 0),
-                    (17, 0, 0, 0),
-                    (18, 0, 0, 0),
-                    (19, 0, 0, 0),
-                    (20, 0, 0, 0),
-                    (21, 0, 0, 0),
-                    (22, 0, 0, 0)]
+                   (6, 100, 530, 14.4),
+                   (7, 107, 510, 7.8),
+                   (8, 60, 400, 6.0),
+                   (9, 78, 610, 6.0),
+                   (10, 132, 550, 4.8),
+                   (11, 105, 500, 3.6),
+                   (12, 154, 700, 18.0),
+                   (13, 112, 520, 7.2),
+                   (14, 92, 280, 13.2),
+                   (15, 108, 620, 5.4),
+                   (16, 95, 580, 12.0),
+                   (17, 110, 310, 4.8),
+                   (18, 55, 270, 3.0),
+                   (19, 98, 290, 4.2),
+                   (20, 55, 330, 15.0),
+                   (21, 68, 340, 14.4),
+                   (22, 50, 250, 7.0)]
 c.executemany("INSERT INTO head_stats (head_id, system_recovery, scan_distance, scan_duration) VALUES (?, ?, ?, ?)", head_stats_data)
 conn.commit()
 
-core_stats_data = [(23, 0, 0, 0),
-                   (24, 0, 0, 0),
-                   (25, 0, 0, 0),
-                   (26, 0, 0, 0),
-                   (27, 0, 0, 0),
-                   (28, 0, 0, 0),
-                   (29, 0, 0, 0),
-                   (30, 0, 0, 0),
-                   (31, 0, 0, 0),
-                   (32, 0, 0, 0),
-                   (33, 0, 0, 0),
-                   (34, 0, 0, 0),
-                   (35, 0, 0, 0),
-                   (36, 0, 0, 0),
-                   (37, 0, 0, 0),
-                   (38, 0, 0, 0)]
+core_stats_data = [(23, 96, 120, 108),
+                   (24, 101, 126, 96),
+                   (25, 95, 112, 104),
+                   (26, 79, 97, 112),
+                   (27, 119, 83, 94),
+                   (28, 115, 101, 105),
+                   (29, 81, 122, 95),
+                   (30, 102, 106, 102),
+                   (31, 349, 126, 84),
+                   (32, 111, 104, 89),
+                   (33, 76, 114, 90),
+                   (34, 80, 96, 100),
+                   (35, 103, 102, 103),
+                   (36, 98, 105, 97),
+                   (37, 119, 83, 94),
+                   (38, 100, 103, 93)]
 c.executemany("INSERT INTO core_stats (core_id, booster_efficiency_adj, generator_output_adj, generator_supply_adj) VALUES (?, ?, ?, ?)", core_stats_data)
 conn.commit()
 
-arm_stats_data = [()]
+arm_stats_data = [(39, 0, 0, 0, 0),
+                  (40, 0, 0, 0, 0),
+                  (41, 0, 0, 0, 0),
+                  (42, 0, 0, 0, 0),
+                  (43, 0, 0, 0, 0),
+                  (44, 0, 0, 0, 0),
+                  (45, 0, 0, 0, 0),
+                  (46, 0, 0, 0, 0),
+                  (47, 0, 0, 0, 0),
+                  (48, 0, 0, 0, 0),
+                  (49, 0, 0, 0, 0),
+                  (50, 0, 0, 0, 0),
+                  (51, 0, 0, 0, 0),
+                  (52, 0, 0, 0, 0),
+                  (53, 0, 0, 0, 0),
+                  (54, 0, 0, 0, 0)]
+c.executemany("INSERT INTO arm_stats (arm_id, arms_load_limit, recoil_control, firearms_specialization, melee_specialization) VALUES (?, ?, ?, ?, ?)", arm_stats_data)
+conn.commit()
 
-leg_stats_data = [(55, 52000, 'Bipedal', 0, 0),
-                  (56, 0, 'Bipedal', 0, 0),
-                  (57, 0, 'Bipedal', 0, 0),
-                  (58, 0, 'Bipedal', 0, 0),
-                  (59, 0, 'Bipedal', 0, 0),
-                  (60, 0, 'Bipedal', 0, 0),
-                  (61, 0, 'Bipedal', 0, 0),
-                  (62, 0, 'Bipedal', 0, 0),
-                  (63, 0, 'Bipedal', 0, 0),
-                  (64, 0, 'Bipedal', 0, 0),
-                  (65, 0, 'Bipedal', 0, 0),
-                  (66, 0, 'Bipedal', 0, 0),
-                  (67, 0, 'Bipedal', 0, 0),
-                  (68, 0, 'Bipedal', 0, 0),
-                  (69, 0, 'Bipedal', 0, 0),
-                  (70, 0, 'Bipedal', 0, 0),
-                  (71, 0, 'Bipedal', 0, 0),
-                  (72, 0, 'Bipedal', 0, 0),
-                  (73, 0, 'Bipedal', 0, 0),
-                  (74, 0, 'Bipedal', 0, 0),
-                  (75, 0, 'Bipedal', 0, 0),
-                  (76, 0, 'Bipedal', 0, 0)]
+leg_stats_data = [(55, 91000, 'Tank', None, None),
+                  (56, 62600, 'Bipedal', 125, 25),
+                  (57, 55050, 'Bipedal', 99, 27),
+                  (58, 63810, 'Bipedal', 83, 22),
+                  (59, 69300, 'Tank', None, None),
+                  (60, 85700, 'Bipedal', 30, 14),
+                  (61, 62600, 'Bipedal', 125, 25),
+                  (62, 58620, 'Bipedal', 92, 23),
+                  (63, 60520, 'Bipedal', 87, 22),
+                  (64, 77100, 'Bipedal', 50, 19),
+                  (65, 100300, 'Tank', None, None),
+                  (66, 76200, 'Tetrapod', 82, 15),
+                  (67, 48650, 'Bipedal', 228, 52),
+                  (68, 55440, 'Bipedal', 98, 26),
+                  (69, 69800, 'Tetrapod', 103, 18),
+                  (70, 61600, 'Reverse Joint', 334, 60),
+                  (71, 68360, 'Reverse Joint', 317, 70),
+                  (72, 47820, 'Reverse Joint', 386, 80),
+                  (73, 52100, 'Bipedal', 115, 28),
+                  (74, 68900, 'Bipedal', 76, 17),
+                  (75, 51200, 'Bipedal', 90, 24),
+                  (76, 82600, 'Bipedal', 60, 20)]
 c.executemany("INSERT INTO leg_stats (leg_id, load_limit, leg_type, jump_distance, jump_height) VALUES (?, ?, ?, ?, ?)", leg_stats_data)
 conn.commit()
 
@@ -390,8 +407,8 @@ conn.commit()
 # c.executemany("INSERT INTO generator_stats (generator_id, en_capacity, en_recharge, supply_recovery, post_recovery_en_supply, en_output) VALUES (?, ?, ?, ?, ?, ?)", generator_stats_data)
 # conn.commit()
 
-# Создание новых таблиц
-c.execute('''CREATE VIEW full_head_stats AS
+# Создание новых таблиц полных статов деталей каркаса 
+c.execute('''CREATE VIEW IF NOT EXISTS full_head_stats AS
           SELECT p.id, p.name, p.category, p.manufacturer, p.price, p.weight, p.en_load, p.description,
           fs.ap, fs.anti_kinetic, fs.anti_energy, fs.anti_explosive, fs.attitude_stability,
           hs.system_recovery, hs.scan_distance, hs.scan_duration
@@ -401,7 +418,7 @@ c.execute('''CREATE VIEW full_head_stats AS
           WHERE p.id BETWEEN 1 AND 22
 ''')
 
-c.execute('''CREATE VIEW full_core_stats AS
+c.execute('''CREATE VIEW IF NOT EXISTS full_core_stats AS
           SELECT p.id, p.name, p.category, p.manufacturer, p.price, p.weight, p.en_load, p.description,
           fs.ap, fs.anti_kinetic, fs.anti_energy, fs.anti_explosive, fs.attitude_stability,
           cs.booster_efficiency_adj, cs.generator_output_adj, cs.generator_supply_adj
@@ -411,7 +428,7 @@ c.execute('''CREATE VIEW full_core_stats AS
           WHERE p.id BETWEEN 23 AND 38
 ''')
 
-c.execute('''CREATE VIEW full_arm_stats AS
+c.execute('''CREATE VIEW IF NOT EXISTS full_arm_stats AS
           SELECT p.id, p.name, p.category, p.manufacturer, p.price, p.weight, p.en_load, p.description,
           fs.ap, fs.anti_kinetic, fs.anti_energy, fs.anti_explosive, fs.attitude_stability,
           rs.arms_load_limit, rs.recoil_control, rs.firearms_specialization, rs.melee_specialization
@@ -421,14 +438,14 @@ c.execute('''CREATE VIEW full_arm_stats AS
           WHERE p.id BETWEEN 39 AND 54
 ''')
 
-c.execute('''CREATE VIEW full_leg_stats AS
+c.execute('''CREATE VIEW IF NOT EXISTS full_leg_stats AS
           SELECT p.id, p.name, p.category, p.manufacturer, p.price, p.weight, p.en_load, p.description,
           fs.ap, fs.anti_kinetic, fs.anti_energy, fs.anti_explosive, fs.attitude_stability,
           ls.load_limit, ls.leg_type, ls.jump_distance, ls.jump_height
           FROM parts AS p
           LEFT JOIN frame_stats AS fs ON p.id = fs.frame_id
           LEFT JOIN leg_stats AS ls ON fs.frame_id = ls.leg_id
-          WHERE p.id BETWEEN 39 AND 54
+          WHERE p.id BETWEEN 55 AND 76
 ''')
 
 
