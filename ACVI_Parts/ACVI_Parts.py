@@ -51,39 +51,39 @@ c.execute('''CREATE TABLE IF NOT EXISTS weapon_stats (
 # Промежуточная таблица характеристик, присутствующих у всех частей каркаса
 c.execute('''CREATE TABLE IF NOT EXISTS frame_stats (
     frame_id INTEGER PRIMARY KEY,
-    ap INTEGER,
-    anti_kinetic INTEGER,
-    anti_energy INTEGER,
-    anti_explosive INTEGER,
-    attitude_stability INTEGER,
+    ap INTEGER NOT NULL,
+    anti_kinetic INTEGER NOT NULL,
+    anti_energy INTEGER NOT NULL,
+    anti_explosive INTEGER NOT NULL,
+    attitude_stability INTEGER NOT NULL,
     FOREIGN KEY (frame_id) REFERENCES parts(id))
 ''')
 
 # Таблица характеристик, присутствующих только у частей голов
 c.execute('''CREATE TABLE IF NOT EXISTS head_stats (
     head_id INTEGER PRIMARY KEY,
-    system_recovery INTEGER,
-    scan_distance INTEGER,
-    scan_duration REAL,
+    system_recovery INTEGER NOT NULL,
+    scan_distance INTEGER NOT NULL,
+    scan_duration REAL NOT NULL,
     FOREIGN KEY (head_id) REFERENCES frame_stats(frame_id))
 ''')
 
 # Таблица характеристик, присутствующих только у частей корпуса
 c.execute('''CREATE TABLE IF NOT EXISTS core_stats (
     core_id INTEGER PRIMARY KEY,
-    booster_efficiency_adj INTEGER,
-    generator_output_adj INTEGER,
-    generator_supply_adj INTEGER,
+    booster_efficiency_adj INTEGER NOT NULL,
+    generator_output_adj INTEGER NOT NULL,
+    generator_supply_adj INTEGER NOT NULL,
     FOREIGN KEY (core_id) REFERENCES frame_stats(frame_id))
 ''')
 
 # Таблица характеристик, присутствующих только у частей рук
 c.execute('''CREATE TABLE IF NOT EXISTS arm_stats (
     arm_id INTEGER PRIMARY KEY,
-    arms_load_limit INTEGER,
-    recoil_control INTEGER,
-    firearms_specialization INTEGER,
-    melee_specialization INTEGER,
+    arms_load_limit INTEGER NOT NULL,
+    recoil_control INTEGER NOT NULL,
+    firearms_specialization INTEGER NOT NULL,
+    melee_specialization INTEGER NOT NULL,
     FOREIGN KEY (arm_id) REFERENCES frame_stats(frame_id))
 ''')
 
@@ -91,7 +91,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS arm_stats (
 c.execute('''CREATE TABLE IF NOT EXISTS leg_stats (
     leg_id INTEGER PRIMARY KEY,
     load_limit INTEGER NOT NULL,
-    leg_type TEXT CHECK (leg_type IN ('Bipedal', 'Reverse Joint', 'Tetrapod', 'Tank', 'Hover')),
+    leg_type TEXT NOT NULL CHECK (leg_type IN ('Bipedal', 'Reverse Joint', 'Tetrapod', 'Tank', 'Hover')),
     jump_distance INTEGER, --поля jump_distance и jump_height могут быть NULL значением
     jump_height INTEGER, --Ибо ноги типа tank и hover не могут прыгать
     FOREIGN KEY (leg_id) REFERENCES frame_stats(frame_id))
