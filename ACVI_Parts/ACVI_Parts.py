@@ -219,7 +219,7 @@ parts_data = [(1, 'IB-C03H: HAL 826', 'Head', 'Rubicon Research Institute', 0, 3
               (75, '2C-2000 CRAWLER', 'Legs', 'RaD', 0, 16300, 280, 'Bipedal legs for scout ACs developed by RaD. Originally specced for surface surveys of astronomical objects, this model makes up for what it lacks in combat performance with a light energy footprint and commendable ease of use.'),
               (76, 'DF-LG-08 TIAN-QIANG', 'Legs', 'Dafeng Core Industries', 0, 23600, 400, 'Bipdedal legs developed by Dafeng Core Industries for the heavyweight TIAN-QIANG AC. Built to embody Dafengs "stout tree, slender branches" philosophy, their weight is balanced by heavy upper legs and lighter lower legs.'),
               
-              (77, 'Test', 'Booster', 'Balam', 0, 0, 0, 'Test')]
+              (78, 'Test', 'Head', 'Balam', 0, 0, 0, 'Test')]
 
 c.executemany("INSERT INTO parts (id, name, category, manufacturer, price, weight, en_load, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", parts_data)
 conn.commit()
@@ -303,7 +303,9 @@ frame_stats_data = [(1, 930, 169, 182, 180, 436),
                     (73, 0, 0, 0, 0, 0),
                     (74, 0, 0, 0, 0, 0),
                     (75, 0, 0, 0, 0, 0),
-                    (76, 0, 0, 0, 0, 0)]
+                    (76, 0, 0, 0, 0, 0),
+                    
+                    (78, 12, 12, 12, 24, 48)]
 c.executemany("INSERT INTO frame_stats (frame_id, ap, anti_kinetic, anti_energy, anti_explosive, attitude_stability) VALUES (?, ?, ?, ?, ?, ?)", frame_stats_data)
 conn.commit()
 
@@ -328,7 +330,9 @@ head_stats_data = [(1, 125, 600, 16.8),
                    (19, 98, 290, 4.2),
                    (20, 55, 330, 15.0),
                    (21, 68, 340, 14.4),
-                   (22, 50, 250, 7.0)]
+                   (22, 50, 250, 7.0),
+                   
+                   (78, 57, 68, 67.0)]
 c.executemany("INSERT INTO head_stats (head_id, system_recovery, scan_distance, scan_duration) VALUES (?, ?, ?, ?)", head_stats_data)
 conn.commit()
 
@@ -413,9 +417,8 @@ c.execute('''CREATE VIEW IF NOT EXISTS full_head_stats AS
           fs.ap, fs.anti_kinetic, fs.anti_energy, fs.anti_explosive, fs.attitude_stability,
           hs.system_recovery, hs.scan_distance, hs.scan_duration
           FROM parts AS p
-          LEFT JOIN frame_stats AS fs ON p.id = fs.frame_id
-          LEFT JOIN head_stats AS hs ON fs.frame_id = hs.head_id
-          WHERE p.id BETWEEN 1 AND 22
+          JOIN frame_stats AS fs ON p.id = fs.frame_id
+          JOIN head_stats AS hs ON fs.frame_id = hs.head_id
 ''')
 
 c.execute('''CREATE VIEW IF NOT EXISTS full_core_stats AS
@@ -423,9 +426,8 @@ c.execute('''CREATE VIEW IF NOT EXISTS full_core_stats AS
           fs.ap, fs.anti_kinetic, fs.anti_energy, fs.anti_explosive, fs.attitude_stability,
           cs.booster_efficiency_adj, cs.generator_output_adj, cs.generator_supply_adj
           FROM parts AS p
-          LEFT JOIN frame_stats AS fs ON p.id = fs.frame_id
-          LEFT JOIN core_stats AS cs ON fs.frame_id = cs.core_id
-          WHERE p.id BETWEEN 23 AND 38
+          JOIN frame_stats AS fs ON p.id = fs.frame_id
+          JOIN core_stats AS cs ON fs.frame_id = cs.core_id
 ''')
 
 c.execute('''CREATE VIEW IF NOT EXISTS full_arm_stats AS
@@ -433,9 +435,8 @@ c.execute('''CREATE VIEW IF NOT EXISTS full_arm_stats AS
           fs.ap, fs.anti_kinetic, fs.anti_energy, fs.anti_explosive, fs.attitude_stability,
           rs.arms_load_limit, rs.recoil_control, rs.firearms_specialization, rs.melee_specialization
           FROM parts AS p
-          LEFT JOIN frame_stats AS fs ON p.id = fs.frame_id
-          LEFT JOIN arm_stats AS rs ON fs.frame_id = rs.arm_id
-          WHERE p.id BETWEEN 39 AND 54
+          JOIN frame_stats AS fs ON p.id = fs.frame_id
+          JOIN arm_stats AS rs ON fs.frame_id = rs.arm_id
 ''')
 
 c.execute('''CREATE VIEW IF NOT EXISTS full_leg_stats AS
@@ -443,9 +444,8 @@ c.execute('''CREATE VIEW IF NOT EXISTS full_leg_stats AS
           fs.ap, fs.anti_kinetic, fs.anti_energy, fs.anti_explosive, fs.attitude_stability,
           ls.load_limit, ls.leg_type, ls.jump_distance, ls.jump_height
           FROM parts AS p
-          LEFT JOIN frame_stats AS fs ON p.id = fs.frame_id
-          LEFT JOIN leg_stats AS ls ON fs.frame_id = ls.leg_id
-          WHERE p.id BETWEEN 55 AND 76
+          JOIN frame_stats AS fs ON p.id = fs.frame_id
+          JOIN leg_stats AS ls ON fs.frame_id = ls.leg_id
 ''')
 
 
