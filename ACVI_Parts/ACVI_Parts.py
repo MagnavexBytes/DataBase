@@ -6,11 +6,11 @@ pp = pprint.PrettyPrinter(indent = 1, width = 160, compact = False)
 c.execute('''PRAGMA foreign_keys = ON''')
 
 
-# Удаление таблиц целиком
+# Удаление таблиц
 c.execute('''DROP TABLE IF EXISTS generator_stats''')
 c.execute('''DROP TABLE IF EXISTS fcs_stats''')
 c.execute('''DROP TABLE IF EXISTS booster_stats''')
-c.execute('''DROP TABLE IF EXISTS weapon_stats''')
+# c.execute('''DROP TABLE IF EXISTS weapon_stats''')
 
 c.execute('''DROP TABLE IF EXISTS leg_stats''')
 c.execute('''DROP TABLE IF EXISTS arm_stats''')
@@ -20,14 +20,19 @@ c.execute('''DROP TABLE IF EXISTS head_stats''')
 c.execute('''DROP TABLE IF EXISTS frame_stats''')
 c.execute('''DROP TABLE IF EXISTS parts''')
 
+
+# Удаление пердставлений
 c.execute('''DROP VIEW IF EXISTS full_head_stats''')
 c.execute('''DROP VIEW IF EXISTS full_core_stats''')
 c.execute('''DROP VIEW IF EXISTS full_arms_stats''')
 c.execute('''DROP VIEW IF EXISTS full_legs_stats''')
 
+c.execute('''DROP VIEW IF EXISTS full_booster_stats''')
+c.execute('''DROP VIEW IF EXISTS full_fcs_stats''')
+c.execute('''DROP VIEW IF EXISTS full_generator_stats''')
+
 
 # Таблицы
-# Таблица характеристик, присутствующих у всех деталей
 c.execute('''CREATE TABLE IF NOT EXISTS parts (
           id INTEGER PRIMARY KEY,
           name TEXT NOT NULL UNIQUE,
@@ -38,16 +43,14 @@ c.execute('''CREATE TABLE IF NOT EXISTS parts (
           description TEXT NOT NULL)
 ''')
 
-# Таблица характеристик, присутствующих только у оружия
-c.execute('''CREATE TABLE IF NOT EXISTS weapon_stats (
-            weapon_id INTEGER PRIMARY KEY,
-            attack_power INTEGER,
-            impact INTEGER,
-            damage_type TEXT CHECK (damage_type IN ('Kinetic', 'Energy', 'Explosion', 'Coral')),
-            FOREIGN KEY (weapon_id) REFERENCES parts(id))
-''')
+# c.execute('''CREATE TABLE IF NOT EXISTS weapon_stats (
+#             weapon_id INTEGER PRIMARY KEY,
+#             attack_power INTEGER,
+#             impact INTEGER,
+#             damage_type TEXT CHECK (damage_type IN ('Kinetic', 'Energy', 'Explosion', 'Coral')),
+#             FOREIGN KEY (weapon_id) REFERENCES parts(id))
+# ''')
 
-# Промежуточная таблица характеристик, присутствующих у всех частей каркаса
 c.execute('''CREATE TABLE IF NOT EXISTS frame_stats (
     frame_id INTEGER PRIMARY KEY,
     ap INTEGER NOT NULL,
@@ -58,7 +61,6 @@ c.execute('''CREATE TABLE IF NOT EXISTS frame_stats (
     FOREIGN KEY (frame_id) REFERENCES parts(id))
 ''')
 
-# Таблица характеристик, присутствующих только у частей голов
 c.execute('''CREATE TABLE IF NOT EXISTS head_stats (
     head_id INTEGER PRIMARY KEY,
     system_recovery INTEGER NOT NULL,
@@ -67,7 +69,6 @@ c.execute('''CREATE TABLE IF NOT EXISTS head_stats (
     FOREIGN KEY (head_id) REFERENCES frame_stats(frame_id))
 ''')
 
-# Таблица характеристик, присутствующих только у частей корпуса
 c.execute('''CREATE TABLE IF NOT EXISTS core_stats (
     core_id INTEGER PRIMARY KEY,
     booster_efficiency_adj INTEGER NOT NULL,
@@ -76,7 +77,6 @@ c.execute('''CREATE TABLE IF NOT EXISTS core_stats (
     FOREIGN KEY (core_id) REFERENCES frame_stats(frame_id))
 ''')
 
-# Таблица характеристик, присутствующих только у частей рук
 c.execute('''CREATE TABLE IF NOT EXISTS arm_stats (
     arm_id INTEGER PRIMARY KEY,
     arms_load_limit INTEGER NOT NULL,
@@ -86,7 +86,6 @@ c.execute('''CREATE TABLE IF NOT EXISTS arm_stats (
     FOREIGN KEY (arm_id) REFERENCES frame_stats(frame_id))
 ''')
 
-# Таблица характеристик, характерных только для деталей ног
 c.execute('''CREATE TABLE IF NOT EXISTS leg_stats (
     leg_id INTEGER PRIMARY KEY,
     load_limit INTEGER NOT NULL,
@@ -96,7 +95,6 @@ c.execute('''CREATE TABLE IF NOT EXISTS leg_stats (
     FOREIGN KEY (leg_id) REFERENCES frame_stats(frame_id))
 ''')
 
-# Таблица характеристик, присутствующих только у частей ускорителей
 c.execute('''CREATE TABLE IF NOT EXISTS booster_stats (
     booster_id INTEGER PRIMARY KEY,
     thrust INTEGER  NOT NULL,
@@ -114,7 +112,6 @@ c.execute('''CREATE TABLE IF NOT EXISTS booster_stats (
     FOREIGN KEY (booster_id) REFERENCES parts(id))
 ''')
 
-# Таблица характеристик, присутствующих только у частей СУО
 c.execute('''CREATE TABLE IF NOT EXISTS fcs_stats (
     fcs_id INTEGER PRIMARY KEY,
     close_assist INTEGER NOT NULL,
@@ -125,7 +122,6 @@ c.execute('''CREATE TABLE IF NOT EXISTS fcs_stats (
     FOREIGN KEY (fcs_id) REFERENCES parts(id))
 ''')
 
-# Таблица характеристик, присутствующих только у частей генератора
 c.execute('''CREATE TABLE IF NOT EXISTS generator_stats (
     generator_id INTEGER PRIMARY KEY,
     en_capacity INTEGER NOT NULL,
@@ -216,7 +212,41 @@ parts_data = [(1, 'IB-C03H: HAL 826', 'Head', 'Rubicon Research Institute', 3760
               (73, 'EL-TL-10 FIRMEZA', 'Legs', 'Elcano', 11200, 378, 'Lightweight bipedal leg parts developed by Elcano. In keeping with Elcanos roots in producing and forging steel, this model exhibits craftsman-like flair, being light yet retaining high load capacity.'),
               (74, '2C-3000 WRECKER', 'Legs', 'RaD', 21680, 680, 'Bipedal leg parts for construction ACs developed by RaD. Specced for demolition work, this model make up for combat performance shortcomings with its sturdiness and outstanding loading capacity.'),
               (75, '2C-2000 CRAWLER', 'Legs', 'RaD', 16300, 280, 'Bipedal legs for scout ACs developed by RaD. Originally specced for surface surveys of astronomical objects, this model makes up for what it lacks in combat performance with a light energy footprint and commendable ease of use.'),
-              (76, 'DF-LG-08 TIAN-QIANG', 'Legs', 'Dafeng Core Industries', 23600, 400, 'Bipdedal legs developed by Dafeng Core Industries for the heavyweight TIAN-QIANG AC. Built to embody Dafengs "stout tree, slender branches" philosophy, their weight is balanced by heavy upper legs and lighter lower legs.')]
+              (76, 'DF-LG-08 TIAN-QIANG', 'Legs', 'Dafeng Core Industries', 23600, 400, 'Bipdedal legs developed by Dafeng Core Industries for the heavyweight TIAN-QIANG AC. Built to embody Dafengs "stout tree, slender branches" philosophy, their weight is balanced by heavy upper legs and lighter lower legs.'),
+              
+              (77, 'Test_77', 'Booster', 'RaD', 0, 0, '0'),
+              (78, 'Test_78', 'Booster', 'RaD', 0, 0, '0'),
+              (79, 'Test_79', 'Booster', 'RaD', 0, 0, '0'),
+              (80, 'Test_80', 'Booster', 'RaD', 0, 0, '0'),
+              (81, 'Test_81', 'Booster', 'RaD', 0, 0, '0'),
+              (82, 'Test_82', 'Booster', 'RaD', 0, 0, '0'),
+              (83, 'Test_83', 'Booster', 'RaD', 0, 0, '0'),
+              (84, 'Test_84', 'Booster', 'RaD', 0, 0, '0'),
+              (85, 'Test_85', 'Booster', 'RaD', 0, 0, '0'),
+
+              (86, 'Test_86', 'FCS', 'RaD', 0, 0, '0'),
+              (87, 'Test_87', 'FCS', 'RaD', 0, 0, '0'),
+              (88, 'Test_88', 'FCS', 'RaD', 0, 0, '0'),
+              (89, 'Test_89', 'FCS', 'RaD', 0, 0, '0'),
+              (90, 'Test_90', 'FCS', 'RaD', 0, 0, '0'),
+              (91, 'Test_91', 'FCS', 'RaD', 0, 0, '0'),
+              (92, 'Test_92', 'FCS', 'RaD', 0, 0, '0'),
+              (93, 'Test_93', 'FCS', 'RaD', 0, 0, '0'),
+              (94, 'Test_94', 'FCS', 'RaD', 0, 0, '0'),
+
+              (95, 'Test_95', 'Generator', 'RaD', 0, 0, '0'),
+              (96, 'Test_96', 'Generator', 'RaD', 0, 0, '0'),
+              (97, 'Test_97', 'Generator', 'RaD', 0, 0, '0'),
+              (98, 'Test_98', 'Generator', 'RaD', 0, 0, '0'),
+              (99, 'Test_99', 'Generator', 'RaD', 0, 0, '0'),
+              (100, 'Test_100', 'Generator', 'RaD', 0, 0, '0'),
+              (101, 'Test_101', 'Generator', 'RaD', 0, 0, '0'),
+              (102, 'Test_102', 'Generator', 'RaD', 0, 0, '0'),
+              (103, 'Test_103', 'Generator', 'RaD', 0, 0, '0'),
+              (104, 'Test_104', 'Generator', 'RaD', 0, 0, '0'),
+              (105, 'Test_105', 'Generator', 'RaD', 0, 0, '0'),
+              (106, 'Test_106', 'Generator', 'RaD', 0, 0, '0'),
+              ]
 
 c.executemany("INSERT INTO parts (id, name, category, manufacturer, weight, en_load, description) VALUES (?, ?, ?, ?, ?, ?, ?)", parts_data)
 conn.commit()
@@ -391,19 +421,51 @@ leg_stats_data = [(55, 91000, 'Tank', None, None),
 c.executemany("INSERT INTO leg_stats (leg_id, load_limit, leg_type, jump_distance, jump_height) VALUES (?, ?, ?, ?, ?)", leg_stats_data)
 conn.commit()
 
-# weapon_stats_data = [(4, 135, 110, 'Kinetic')]
+# weapon_stats_data = [(106, 0, 0, 'Kinetic')]
 # c.executemany("INSERT INTO weapon_stats (weapon_id, attack_power, impact, damage_type) VALUES (?, ?, ?, ?)", weapon_stats_data)
 # conn.commit()
 
-# booster_stats_data = [(5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)]
-# c.executemany("INSERT INTO booster_stats (booster_id, thrust, upward_thrust, upward_en_consumption, qb_thrust, qb_jet_duration, qb_en_consumption, qb_reload_time, qb_reload_ideal_weight, ab_thrust, ab_en_consumption, melee_attack_thrust, melee_attack_en_consumption) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", booster_stats_data)
-# conn.commit()
+booster_stats_data = [(77, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+                      (78, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+                      (79, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+                      (80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+                      (81, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+                      (82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+                      (83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+                      (84, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+                      (85, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)]
+c.executemany("INSERT INTO booster_stats (booster_id, thrust, upward_thrust, upward_en_consumption, qb_thrust, qb_jet_duration, qb_en_consumption, qb_reload_time, qb_reload_ideal_weight, ab_thrust, ab_en_consumption, melee_attack_thrust, melee_attack_en_consumption) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", booster_stats_data)
+conn.commit()
 
-# generator_stats_data = [(6, 2620, 892, 434, 1200, 3400)]
-# c.executemany("INSERT INTO generator_stats (generator_id, en_capacity, en_recharge, supply_recovery, post_recovery_en_supply, en_output) VALUES (?, ?, ?, ?, ?, ?)", generator_stats_data)
-# conn.commit()
+fcs_stats_data = [(86, 0, 0, 0, 0, 0), 
+                  (87, 0, 0, 0, 0, 0), 
+                  (88, 0, 0, 0, 0, 0), 
+                  (89, 0, 0, 0, 0, 0), 
+                  (90, 0, 0, 0, 0, 0), 
+                  (91, 0, 0, 0, 0, 0), 
+                  (92, 0, 0, 0, 0, 0), 
+                  (93, 0, 0, 0, 0, 0), 
+                  (94, 0, 0, 0, 0, 0)]
+c.executemany("INSERT INTO fcs_stats (fcs_id, close_assist, medium_assist, long_assist, missile_lock_correction, multi_lock_correction) VALUES (?, ?, ?, ?, ?, ?)", fcs_stats_data)
+conn.commit()
 
-# Создание новых таблиц полных статов деталей каркаса 
+
+generator_stats_data = [(95, 0, 0, 0, 0, 0),
+                        (96, 0, 0, 0, 0, 0),
+                        (97, 0, 0, 0, 0, 0),
+                        (98, 0, 0, 0, 0, 0),
+                        (99, 0, 0, 0, 0, 0),
+                        (100, 0, 0, 0, 0, 0),
+                        (101, 0, 0, 0, 0, 0),
+                        (102, 0, 0, 0, 0, 0),
+                        (103, 0, 0, 0, 0, 0),
+                        (104, 0, 0, 0, 0, 0),
+                        (105, 0, 0, 0, 0, 0),
+                        (106, 0, 0, 0, 0, 0),]
+c.executemany("INSERT INTO generator_stats (generator_id, en_capacity, en_recharge, supply_recovery, post_recovery_en_supply, en_output) VALUES (?, ?, ?, ?, ?, ?)", generator_stats_data)
+conn.commit()
+
+# Создание новых таблиц полных статов деталей
 c.execute('''CREATE VIEW IF NOT EXISTS full_head_stats AS
           SELECT p.id, p.name, p.category, p.manufacturer, p.weight, p.en_load, p.description,
           fs.ap, fs.anti_kinetic, fs.anti_energy, fs.anti_explosive, fs.attitude_stability,
@@ -440,13 +502,26 @@ c.execute('''CREATE VIEW IF NOT EXISTS full_leg_stats AS
           JOIN leg_stats AS ls ON fs.frame_id = ls.leg_id
 ''')
 
+c.execute('''CREATE VIEW IF NOT EXISTS full_booster_stats AS
+          SELECT p.id, p.name, p.category, p.manufacturer, p.weight, p.en_load, p.description,
+          bs.booster_id, bs.thrust, bs.upward_thrust, bs.upward_en_consumption, bs.qb_thrust, bs.qb_jet_duration, bs.qb_en_consumption, bs.qb_reload_time, bs.qb_reload_ideal_weight, bs.ab_thrust, bs.ab_en_consumption, bs.melee_attack_thrust, bs.melee_attack_en_consumption
+          FROM parts AS p
+          JOIN booster_stats AS bs ON p.id = bs.booster_id
+''')
 
-# c.execute("SELECT id FROM parts")
-# existing_ids = {row[0] for row in c.fetchall()}
-# missing_ids = [item[0] for item in frame_stats_data if item[0] not in existing_ids]
-# if missing_ids:
-#     print(f"Ошибка! Эти ID отсутствуют в таблице parts: {missing_ids}")
-# else:
-#     print("С ID все в порядке. Проблема в другом.")
+c.execute('''CREATE VIEW IF NOT EXISTS full_fcs_stats AS
+          SELECT p.id, p.name, p.category, p.manufacturer, p.weight, p.en_load, p.description,
+          fcs.fcs_id, fcs.close_assist, fcs.medium_assist, fcs.long_assist, fcs.missile_lock_correction, fcs.multi_lock_correction
+          FROM parts AS p
+          JOIN fcs_stats AS fcs ON p.id = fcs.fcs_id
+''')
+
+c.execute('''CREATE VIEW IF NOT EXISTS full_generator_stats AS
+          SELECT p.id, p.name, p.category, p.manufacturer, p.weight, p.en_load, p.description,
+          gs.generator_id, gs.en_capacity, gs.en_recharge, gs.supply_recovery, gs.post_recovery_en_supply, gs.en_output
+          FROM parts AS p
+          JOIN generator_stats AS gs ON p.id = gs.generator_id
+''')
+
 
 conn.close()
