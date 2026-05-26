@@ -7,10 +7,11 @@ c.execute('''PRAGMA foreign_keys = ON''')
 
 
 # Удаление таблиц
+c.execute('''DROP TABLE IF EXISTS ac_build''')
+
 c.execute('''DROP TABLE IF EXISTS generator_stats''')
 c.execute('''DROP TABLE IF EXISTS fcs_stats''')
 c.execute('''DROP TABLE IF EXISTS booster_stats''')
-# c.execute('''DROP TABLE IF EXISTS weapon_stats''')
 
 c.execute('''DROP TABLE IF EXISTS leg_stats''')
 c.execute('''DROP TABLE IF EXISTS arm_stats''')
@@ -22,6 +23,8 @@ c.execute('''DROP TABLE IF EXISTS parts''')
 
 
 # Удаление пердставлений
+c.execute('''DROP VIEW IF EXISTS ac_build_specs''')
+
 c.execute('''DROP VIEW IF EXISTS full_head_stats''')
 c.execute('''DROP VIEW IF EXISTS full_core_stats''')
 c.execute('''DROP VIEW IF EXISTS full_arms_stats''')
@@ -43,14 +46,6 @@ c.execute('''CREATE TABLE IF NOT EXISTS parts (
           description TEXT NOT NULL)
 ''')
 
-# c.execute('''CREATE TABLE IF NOT EXISTS weapon_stats (
-#             weapon_id INTEGER PRIMARY KEY,
-#             attack_power INTEGER,
-#             impact INTEGER,
-#             damage_type TEXT CHECK (damage_type IN ('Kinetic', 'Energy', 'Explosion', 'Coral')),
-#             FOREIGN KEY (weapon_id) REFERENCES parts(id))
-# ''')
-
 c.execute('''CREATE TABLE IF NOT EXISTS frame_stats (
     frame_id INTEGER PRIMARY KEY,
     ap INTEGER NOT NULL,
@@ -58,7 +53,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS frame_stats (
     anti_energy INTEGER NOT NULL,
     anti_explosive INTEGER NOT NULL,
     attitude_stability INTEGER NOT NULL,
-    FOREIGN KEY (frame_id) REFERENCES parts(id))
+        FOREIGN KEY (frame_id) REFERENCES parts(id))
 ''')
 
 c.execute('''CREATE TABLE IF NOT EXISTS head_stats (
@@ -66,7 +61,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS head_stats (
     system_recovery INTEGER NOT NULL,
     scan_distance INTEGER NOT NULL,
     scan_duration REAL NOT NULL,
-    FOREIGN KEY (head_id) REFERENCES frame_stats(frame_id))
+        FOREIGN KEY (head_id) REFERENCES frame_stats(frame_id))
 ''')
 
 c.execute('''CREATE TABLE IF NOT EXISTS core_stats (
@@ -74,7 +69,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS core_stats (
     booster_efficiency_adj INTEGER NOT NULL,
     generator_output_adj INTEGER NOT NULL,
     generator_supply_adj INTEGER NOT NULL,
-    FOREIGN KEY (core_id) REFERENCES frame_stats(frame_id))
+        FOREIGN KEY (core_id) REFERENCES frame_stats(frame_id))
 ''')
 
 c.execute('''CREATE TABLE IF NOT EXISTS arm_stats (
@@ -83,7 +78,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS arm_stats (
     recoil_control INTEGER NOT NULL,
     firearms_specialization INTEGER NOT NULL,
     melee_specialization INTEGER NOT NULL,
-    FOREIGN KEY (arm_id) REFERENCES frame_stats(frame_id))
+        FOREIGN KEY (arm_id) REFERENCES frame_stats(frame_id))
 ''')
 
 c.execute('''CREATE TABLE IF NOT EXISTS leg_stats (
@@ -92,7 +87,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS leg_stats (
     leg_type TEXT NOT NULL CHECK (leg_type IN ('Bipedal', 'Reverse Joint', 'Tetrapod', 'Tank', 'Hover')),
     jump_distance INTEGER, --поля jump_distance и jump_height могут быть NULL значением
     jump_height INTEGER, --Ибо ноги типа tank и hover не могут прыгать
-    FOREIGN KEY (leg_id) REFERENCES frame_stats(frame_id))
+        FOREIGN KEY (leg_id) REFERENCES frame_stats(frame_id))
 ''')
 
 c.execute('''CREATE TABLE IF NOT EXISTS booster_stats (
@@ -109,7 +104,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS booster_stats (
     ab_en_consumption INTEGER  NOT NULL,
     melee_attack_thrust INTEGER  NOT NULL,
     melee_attack_en_consumption INTEGER  NOT NULL,
-    FOREIGN KEY (booster_id) REFERENCES parts(id))
+        FOREIGN KEY (booster_id) REFERENCES parts(id))
 ''')
 
 c.execute('''CREATE TABLE IF NOT EXISTS fcs_stats (
@@ -119,7 +114,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS fcs_stats (
     long_assist INTEGER NOT NULL,
     missile_lock_correction INTEGER NOT NULL,
     multi_lock_correction INTEGER NOT NULL,
-    FOREIGN KEY (fcs_id) REFERENCES parts(id))
+        FOREIGN KEY (fcs_id) REFERENCES parts(id))
 ''')
 
 c.execute('''CREATE TABLE IF NOT EXISTS generator_stats (
@@ -129,9 +124,27 @@ c.execute('''CREATE TABLE IF NOT EXISTS generator_stats (
     supply_recovery INTEGER NOT NULL,
     post_recovery_en_supply INTEGER NOT NULL,
     en_output INTEGER NOT NULL,
-    FOREIGN KEY (generator_id) REFERENCES parts(id))
+        FOREIGN KEY (generator_id) REFERENCES parts(id))
 ''')
 
+c.execute('''CREATE TABLE IF NOT EXISTS ac_build (
+          build_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          build_name TEXT NOT NULL,
+          head_id INTEGER,
+          core_id INTEGER,
+          arms_id INTEGER,
+          legs_id INTEGER,
+          booster_id INTEGER,
+          fcs_id INTEGER,
+          generator_id INTEGER,
+            FOREIGN KEY(head_id) REFERENCES parts(id),
+            FOREIGN KEY(core_id) REFERENCES parts(id),
+            FOREIGN KEY(arms_id) REFERENCES parts(id),
+            FOREIGN KEY(legs_id) REFERENCES parts(id),
+            FOREIGN KEY(booster_id) REFERENCES parts(id),
+            FOREIGN KEY(fcs_id) REFERENCES parts(id),
+            FOREIGN KEY(generator_id) REFERENCES parts(id))
+''')
 
 # Данные
 parts_data = [(1, 'IB-C03H: HAL 826', 'Head', 'Rubicon Research Institute', 3760, 215, 'Head part for the HAL 826 piloted AC, developed long ago by the Rubicon Research Institute. The last of the Ibis Series and the only piloted Ibis craft, it was built to be the final safety valve to prevent a Coral Collapse.'),
@@ -246,7 +259,6 @@ parts_data = [(1, 'IB-C03H: HAL 826', 'Head', 'Rubicon Research Institute', 3760
               (104, 'Test_104', 'Generator', 'RaD', 0, 0, '0'),
               (105, 'Test_105', 'Generator', 'RaD', 0, 0, '0'),
               (106, 'Test_106', 'Generator', 'RaD', 0, 0, '0')]
-
 c.executemany("INSERT INTO parts (id, name, category, manufacturer, weight, en_load, description) VALUES (?, ?, ?, ?, ?, ?, ?)", parts_data)
 conn.commit()
 
@@ -420,10 +432,6 @@ leg_stats_data = [(55, 91000, 'Tank', None, None),
 c.executemany("INSERT INTO leg_stats (leg_id, load_limit, leg_type, jump_distance, jump_height) VALUES (?, ?, ?, ?, ?)", leg_stats_data)
 conn.commit()
 
-# weapon_stats_data = [(106, 0, 0, 'Kinetic')]
-# c.executemany("INSERT INTO weapon_stats (weapon_id, attack_power, impact, damage_type) VALUES (?, ?, ?, ?)", weapon_stats_data)
-# conn.commit()
-
 booster_stats_data = [(77, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
                       (78, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
                       (79, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -520,6 +528,52 @@ c.execute('''CREATE VIEW IF NOT EXISTS full_generator_stats AS
           gs.generator_id, gs.en_capacity, gs.en_recharge, gs.supply_recovery, gs.post_recovery_en_supply, gs.en_output
           FROM parts AS p
           JOIN generator_stats AS gs ON p.id = gs.generator_id
+''')
+
+c.execute('''CREATE VIEW IF NOT EXISTS ac_build_specs AS
+          SELECT b.build_id, b.build_name,
+
+          p_h.name AS head_name,
+          p_c.name AS core_name,
+          p_a.name AS arms_name,
+          p_l.name AS legs_name,
+          p_bst.name AS booster_name,
+          p_fcs.name AS fcs_name,
+          p_gen.name AS generator_name,
+
+          (IFNULL(p_h.weight, 0) + IFNULL(p_c.weight, 0) + IFNULL(p_a.weight, 0) + IFNULL(p_l.weight, 0) + IFNULL(p_bst.weight, 0) + IFNULL(p_fcs.weight, 0) + IFNULL(p_gen.weight, 0)) AS total_weight,
+    
+          (IFNULL(p_h.en_load, 0) + IFNULL(p_c.en_load, 0) + IFNULL(p_a.en_load, 0) + IFNULL(p_l.en_load, 0) + IFNULL(p_bst.en_load, 0) + IFNULL(p_fcs.en_load, 0) + IFNULL(p_gen.en_load, 0)) AS total_en_load,
+    
+          (IFNULL(f_h.ap, 0) + IFNULL(f_c.ap, 0) + IFNULL(f_a.ap, 0) + IFNULL(f_l.ap, 0)) AS total_ap,
+          (IFNULL(f_h.anti_kinetic, 0) + IFNULL(f_c.anti_kinetic, 0) + IFNULL(f_a.anti_kinetic, 0) + IFNULL(f_l.anti_kinetic, 0)) AS total_anti_kinetic,
+          (IFNULL(f_h.anti_energy, 0) + IFNULL(f_c.anti_energy, 0) + IFNULL(f_a.anti_energy, 0) + IFNULL(f_l.anti_energy, 0)) AS total_anti_energy,
+          (IFNULL(f_h.anti_explosive, 0) + IFNULL(f_c.anti_explosive, 0) + IFNULL(f_a.anti_explosive, 0) + IFNULL(f_l.anti_explosive, 0)) AS total_anti_explosive,
+          (IFNULL(f_h.attitude_stability, 0) + IFNULL(f_c.attitude_stability, 0) + IFNULL(f_a.attitude_stability, 0) + IFNULL(f_l.attitude_stability, 0)) AS total_attitude_stability,
+
+          IFNULL(f_l_stats.load_limit, 0) AS legs_load_limit,
+          IFNULL(f_a_stats.arms_load_limit, 0) AS arms_load_limit,
+          IFNULL(g_stats.en_output, 0) AS generator_en_output,
+          IFNULL(g_stats.en_capacity, 0) AS generator_en_capacity
+                    
+          FROM ac_build b
+
+          LEFT JOIN parts p_h   ON b.head_id = p_h.id
+          LEFT JOIN parts p_c   ON b.core_id = p_c.id
+          LEFT JOIN parts p_a   ON b.arms_id = p_a.id
+          LEFT JOIN parts p_l   ON b.legs_id = p_l.id
+          LEFT JOIN parts p_bst ON b.booster_id = p_bst.id
+          LEFT JOIN parts p_fcs ON b.fcs_id = p_fcs.id
+          LEFT JOIN parts p_gen ON b.generator_id = p_gen.id
+
+          LEFT JOIN frame_stats f_h ON b.head_id = f_h.frame_id
+          LEFT JOIN frame_stats f_c ON b.core_id = f_c.frame_id
+          LEFT JOIN frame_stats f_a ON b.arms_id = f_a.frame_id
+          LEFT JOIN frame_stats f_l ON b.legs_id = f_l.frame_id
+
+          LEFT JOIN leg_stats f_l_stats ON b.legs_id = f_l_stats.leg_id
+          LEFT JOIN arm_stats f_a_stats ON b.arms_id = f_a_stats.arm_id
+          LEFT JOIN generator_stats g_stats ON b.generator_id = g_stats.generator_id
 ''')
 
 
