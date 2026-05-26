@@ -10,18 +10,18 @@ c = conn.cursor()
 c.execute('''PRAGMA foreign_keys = 1''')
 
 # Удаляем таблицы целиком, начиная с самых зависимых
-# c.execute('''drop table if exists teachers_class''')
-# c.execute('''drop table if exists teachers''')
-# c.execute('''drop table if exists job_titles''')
-# c.execute('''drop table if exists experience''')
-# conn.commit()
+c.execute('''drop table if exists teachers_class''')
+c.execute('''drop table if exists teachers''')
+c.execute('''drop table if exists job_titles''')
+c.execute('''drop table if exists experience''')
+conn.commit()
 
 # Удаление всех строк таблиц, начиная с самых зависимых
-c.execute('''Delete from teachers_class''')
-c.execute('''Delete from teachers''')
-c.execute('''Delete from job_titles''')
-c.execute('''Delete from experience''')
-conn.commit()
+# c.execute('''Delete from teachers_class''')
+# c.execute('''Delete from teachers''')
+# c.execute('''Delete from job_titles''')
+# c.execute('''Delete from experience''')
+# conn.commit()
 
 # Создание таблицы job_title
 c.execute('''CREATE TABLE IF NOT EXISTS job_titles (
@@ -59,8 +59,8 @@ FOREIGN KEY (name) REFERENCES teachers (name)
 )''')
 
 # Вставка нескольких строк в таблицу job_titles
-job_titles_m = [('Преподаватель', '500'),
-            ('Старший преподаватель', '800')]
+job_titles_m = [('Преподаватель', 500),
+            ('Старший преподаватель', 800)]
 c.executemany("INSERT INTO job_titles (title, salary) VALUES (?,?)", job_titles_m)
 conn.commit()
 
@@ -101,13 +101,16 @@ c.execute('''Select * from experience''')
 pp.pprint(c.fetchall())
 
 # 5.6 Напишите запрос: какую заработную плату получает каждый сотрудник кафедры 25, учитывая надбавку за стаж
-# c.execute("""
-# SELECT * FROM teachers
-#           JOIN
-#           JOIN
-# WHERE department = '25'
-# """)
-# pp.pprint(c.fetchall())
+c.execute('''
+SELECT t.name, (j.salary + e.bonus) AS total_salary
+FROM teachers AS t
+JOIN job_titles AS j ON t.title = j.title
+JOIN experience AS e ON t.exp = e.exp
+WHERE t.department = '25'
+''')
+
+print("\nЗаработная плата сотрудников кафедры 25:")
+pp.pprint(c.fetchall())
 
 # Закрытие передачи
 conn.close() 

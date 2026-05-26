@@ -245,8 +245,7 @@ parts_data = [(1, 'IB-C03H: HAL 826', 'Head', 'Rubicon Research Institute', 3760
               (103, 'Test_103', 'Generator', 'RaD', 0, 0, '0'),
               (104, 'Test_104', 'Generator', 'RaD', 0, 0, '0'),
               (105, 'Test_105', 'Generator', 'RaD', 0, 0, '0'),
-              (106, 'Test_106', 'Generator', 'RaD', 0, 0, '0'),
-              ]
+              (106, 'Test_106', 'Generator', 'RaD', 0, 0, '0')]
 
 c.executemany("INSERT INTO parts (id, name, category, manufacturer, weight, en_load, description) VALUES (?, ?, ?, ?, ?, ?, ?)", parts_data)
 conn.commit()
@@ -465,7 +464,7 @@ generator_stats_data = [(95, 0, 0, 0, 0, 0),
 c.executemany("INSERT INTO generator_stats (generator_id, en_capacity, en_recharge, supply_recovery, post_recovery_en_supply, en_output) VALUES (?, ?, ?, ?, ?, ?)", generator_stats_data)
 conn.commit()
 
-# Создание новых таблиц полных статов деталей
+# Создание пердставлений полных статов деталей
 c.execute('''CREATE VIEW IF NOT EXISTS full_head_stats AS
           SELECT p.id, p.name, p.category, p.manufacturer, p.weight, p.en_load, p.description,
           fs.ap, fs.anti_kinetic, fs.anti_energy, fs.anti_explosive, fs.attitude_stability,
