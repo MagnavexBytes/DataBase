@@ -14,10 +14,7 @@
     * Заполнение данными таблиц внутренних деталей --<font color="red">0%</font>
  * Таблица вооружения --<font color="yellow">30%</font>
 
- # Ссылка на доску Miro:
- https://miro.com/app/board/uXjVLq3ZZ_s=/?share_link_id=671448516677
     * Заполнение данными таблицы вооружения --<font color="red">0%</font>
->>>>>>> 1a745343e99f607fdd7f4e25ff64edb854d43c5e
 
  * Таблицы полных статов деталей каркаса (голов, рук, корпусов и ног) --<font color="green">100% Done</font>
     * Заполнение зависит от предыдущих пунктов --<font color="yellow">30%</font>
@@ -28,3 +25,5 @@
  * Таблица полной сборки AC --<font color="red">0%</font>
     * Заполнение зависит от предыдущих пунктов --<font color="red">0%</font>
 
+ # Ссылка на доску Miro:
+ https://miro.com/app/board/uXjVLq3ZZ_s=/?share_link_id=671448516677
