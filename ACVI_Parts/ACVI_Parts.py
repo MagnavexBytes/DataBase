@@ -7,8 +7,6 @@ c.execute('''PRAGMA foreign_keys = ON''')
 
 
 # Удаление таблиц
-c.execute('''DROP TABLE IF EXISTS ac_build''')
-
 c.execute('''DROP TABLE IF EXISTS generator_stats''')
 c.execute('''DROP TABLE IF EXISTS fcs_stats''')
 c.execute('''DROP TABLE IF EXISTS booster_stats''')
@@ -24,6 +22,7 @@ c.execute('''DROP TABLE IF EXISTS parts''')
 
 # Удаление пердставлений
 c.execute('''DROP VIEW IF EXISTS ac_build_specs''')
+c.execute('''DROP VIEW IF EXISTS ac_build''')
 
 c.execute('''DROP VIEW IF EXISTS full_head_stats''')
 c.execute('''DROP VIEW IF EXISTS full_core_stats''')
@@ -127,24 +126,6 @@ c.execute('''CREATE TABLE IF NOT EXISTS generator_stats (
         FOREIGN KEY (generator_id) REFERENCES parts(id))
 ''')
 
-c.execute('''CREATE TABLE IF NOT EXISTS ac_build (
-          build_id INTEGER PRIMARY KEY AUTOINCREMENT,
-          build_name TEXT NOT NULL,
-          head_id INTEGER,
-          core_id INTEGER,
-          arms_id INTEGER,
-          legs_id INTEGER,
-          booster_id INTEGER,
-          fcs_id INTEGER,
-          generator_id INTEGER,
-            FOREIGN KEY(head_id) REFERENCES parts(id),
-            FOREIGN KEY(core_id) REFERENCES parts(id),
-            FOREIGN KEY(arms_id) REFERENCES parts(id),
-            FOREIGN KEY(legs_id) REFERENCES parts(id),
-            FOREIGN KEY(booster_id) REFERENCES parts(id),
-            FOREIGN KEY(fcs_id) REFERENCES parts(id),
-            FOREIGN KEY(generator_id) REFERENCES parts(id))
-''')
 
 # Данные
 parts_data = [(1, 'IB-C03H: HAL 826', 'Head', 'Rubicon Research Institute', 3760, 215, 'Head part for the HAL 826 piloted AC, developed long ago by the Rubicon Research Institute. The last of the Ibis Series and the only piloted Ibis craft, it was built to be the final safety valve to prevent a Coral Collapse.'),
@@ -456,7 +437,6 @@ fcs_stats_data = [(86, 15, 50, 80, 97, 70),
 c.executemany("INSERT INTO fcs_stats (fcs_id, close_assist, medium_assist, long_assist, missile_lock_correction, multi_lock_correction) VALUES (?, ?, ?, ?, ?, ?)", fcs_stats_data)
 conn.commit()
 
-
 generator_stats_data = [(95, 3690, 555, 377, 720, 128),
                         (96, 0, 0, 0, 0, 0),
                         (97, 0, 0, 0, 0, 0),
@@ -472,9 +452,6 @@ generator_stats_data = [(95, 3690, 555, 377, 720, 128),
 c.executemany("INSERT INTO generator_stats (generator_id, en_capacity, en_recharge, supply_recovery, post_recovery_en_supply, en_output) VALUES (?, ?, ?, ?, ?, ?)", generator_stats_data)
 conn.commit()
 
-ac_build_data = [(1, 'Test Build', 1, 23, 39, 55, 77, 86, 95)]
-c.executemany("INSERT INTO ac_build (build_id, build_name, head_id, core_id, arms_id, legs_id, booster_id, fcs_id, generator_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", ac_build_data)
-conn.commit()
 
 # Создание пердставлений полных статов деталей
 c.execute('''CREATE VIEW IF NOT EXISTS full_head_stats AS
@@ -534,9 +511,19 @@ c.execute('''CREATE VIEW IF NOT EXISTS full_generator_stats AS
           JOIN generator_stats AS gs ON p.id = gs.generator_id
 ''')
 
-c.execute('''CREATE VIEW IF NOT EXISTS ac_build_specs AS
-          SELECT b.build_id, b.build_name,
+c.execute('''CREATE VIEW IF NOT EXISTS ac_build AS
+          SELECT 'Current AC' AS build_name,
+            (SELECT id FROM parts WHERE category = 'Head' AND id = 1) AS head_id,
+            (SELECT id FROM parts WHERE category = 'Core' AND id = 23) AS core_id,
+            (SELECT id FROM parts WHERE category = 'Arms' AND id = 39) AS arms_id,
+            (SELECT id FROM parts WHERE category = 'Legs' AND id = 55) AS legs_id,
+            (SELECT id FROM parts WHERE category = 'Booster' AND id = 77) AS booster_id,
+            (SELECT id FROM parts WHERE category = 'FCS' AND id = 86) AS fcs_id,
+            (SELECT id FROM parts WHERE category = 'Generator' AND id = 95) AS generator_id;
+''')
 
+c.execute('''CREATE VIEW IF NOT EXISTS ac_build_specs AS
+          SELECT 
           p_h.name AS head_name,
           p_c.name AS core_name,
           p_a.name AS arms_name,
@@ -545,23 +532,70 @@ c.execute('''CREATE VIEW IF NOT EXISTS ac_build_specs AS
           p_fcs.name AS fcs_name,
           p_gen.name AS generator_name,
 
+          -- Базовые суммарные характеристики
           (IFNULL(p_h.weight, 0) + IFNULL(p_c.weight, 0) + IFNULL(p_a.weight, 0) + IFNULL(p_l.weight, 0) + IFNULL(p_bst.weight, 0) + IFNULL(p_fcs.weight, 0) + IFNULL(p_gen.weight, 0)) AS total_weight,
-    
           (IFNULL(p_h.en_load, 0) + IFNULL(p_c.en_load, 0) + IFNULL(p_a.en_load, 0) + IFNULL(p_l.en_load, 0) + IFNULL(p_bst.en_load, 0) + IFNULL(p_fcs.en_load, 0) + IFNULL(p_gen.en_load, 0)) AS total_en_load,
     
+          -- Параметры живучести (Frame Stats)
           (IFNULL(f_h.ap, 0) + IFNULL(f_c.ap, 0) + IFNULL(f_a.ap, 0) + IFNULL(f_l.ap, 0)) AS total_ap,
           (IFNULL(f_h.anti_kinetic, 0) + IFNULL(f_c.anti_kinetic, 0) + IFNULL(f_a.anti_kinetic, 0) + IFNULL(f_l.anti_kinetic, 0)) AS total_anti_kinetic,
           (IFNULL(f_h.anti_energy, 0) + IFNULL(f_c.anti_energy, 0) + IFNULL(f_a.anti_energy, 0) + IFNULL(f_l.anti_energy, 0)) AS total_anti_energy,
           (IFNULL(f_h.anti_explosive, 0) + IFNULL(f_c.anti_explosive, 0) + IFNULL(f_a.anti_explosive, 0) + IFNULL(f_l.anti_explosive, 0)) AS total_anti_explosive,
           (IFNULL(f_h.attitude_stability, 0) + IFNULL(f_c.attitude_stability, 0) + IFNULL(f_a.attitude_stability, 0) + IFNULL(f_l.attitude_stability, 0)) AS total_attitude_stability,
 
-          IFNULL(f_l_stats.load_limit, 0) AS legs_load_limit,
+          -- Уникальные характеристики Головы (Head)
+          IFNULL(h_stats.system_recovery, 0) AS head_system_recovery,
+          IFNULL(h_stats.scan_distance, 0) AS head_scan_distance,
+          IFNULL(h_stats.scan_duration, 0.0) AS head_scan_duration,
+
+          -- Уникальные характеристики Ядра (Core)
+          IFNULL(c_stats.booster_efficiency_adj, 0) AS core_booster_efficiency_adj,
+          IFNULL(c_stats.generator_output_adj, 0) AS core_generator_output_adj,
+          IFNULL(c_stats.generator_supply_adj, 0) AS core_generator_supply_adj,
+
+          -- Уникальные характеристики Рук (Arms)
           IFNULL(f_a_stats.arms_load_limit, 0) AS arms_load_limit,
+          IFNULL(f_a_stats.recoil_control, 0) AS arms_recoil_control,
+          IFNULL(f_a_stats.firearms_specialization, 0) AS arms_firearms_specialization,
+          IFNULL(f_a_stats.melee_specialization, 0) AS arms_melee_specialization,
+
+          -- Уникальные характеристики Ног (Legs)
+          IFNULL(f_l_stats.load_limit, 0) AS legs_load_limit,
+          IFNULL(f_l_stats.leg_type, 'Unknown') AS legs_type,
+          f_l_stats.jump_distance AS legs_jump_distance, -- Оставляем NULL, так как танки не прыгают
+          f_l_stats.jump_height AS legs_jump_height,     -- Оставляем NULL
+
+          -- Уникальные характеристики Бустера (Booster)
+          IFNULL(bst_stats.thrust, 0) AS booster_thrust,
+          IFNULL(bst_stats.upward_thrust, 0) AS booster_upward_thrust,
+          IFNULL(bst_stats.upward_en_consumption, 0) AS booster_upward_en_consumption,
+          IFNULL(bst_stats.qb_thrust, 0) AS booster_qb_thrust,
+          IFNULL(bst_stats.qb_jet_duration, 0.0) AS booster_qb_jet_duration,
+          IFNULL(bst_stats.qb_en_consumption, 0) AS booster_qb_en_consumption,
+          IFNULL(bst_stats.qb_reload_time, 0.0) AS booster_qb_reload_time,
+          IFNULL(bst_stats.qb_reload_ideal_weight, 0) AS booster_qb_reload_ideal_weight,
+          IFNULL(bst_stats.ab_thrust, 0) AS booster_ab_thrust,
+          IFNULL(bst_stats.ab_en_consumption, 0) AS booster_ab_en_consumption,
+          IFNULL(bst_stats.melee_attack_thrust, 0) AS booster_melee_attack_thrust,
+          IFNULL(bst_stats.melee_attack_en_consumption, 0) AS booster_melee_attack_en_consumption,
+
+          -- Уникальные характеристики СУО (FCS)
+          IFNULL(fcs_stats.close_assist, 0) AS fcs_close_assist,
+          IFNULL(fcs_stats.medium_assist, 0) AS fcs_medium_assist,
+          IFNULL(fcs_stats.long_assist, 0) AS fcs_long_assist,
+          IFNULL(fcs_stats.missile_lock_correction, 0) AS fcs_missile_lock_correction,
+          IFNULL(fcs_stats.multi_lock_correction, 0) AS fcs_multi_lock_correction,
+
+          -- Уникальные характеристики Генератора (Generator)
           IFNULL(g_stats.en_output, 0) AS generator_en_output,
-          IFNULL(g_stats.en_capacity, 0) AS generator_en_capacity
+          IFNULL(g_stats.en_capacity, 0) AS generator_en_capacity,
+          IFNULL(g_stats.en_recharge, 0) AS generator_en_recharge,
+          IFNULL(g_stats.supply_recovery, 0) AS generator_supply_recovery,
+          IFNULL(g_stats.post_recovery_en_supply, 0) AS generator_post_recovery_en_supply
                     
           FROM ac_build AS b
 
+          -- Подключение базовых деталей
           LEFT JOIN parts p_h   ON b.head_id = p_h.id
           LEFT JOIN parts p_c   ON b.core_id = p_c.id
           LEFT JOIN parts p_a   ON b.arms_id = p_a.id
@@ -570,15 +604,22 @@ c.execute('''CREATE VIEW IF NOT EXISTS ac_build_specs AS
           LEFT JOIN parts p_fcs ON b.fcs_id = p_fcs.id
           LEFT JOIN parts p_gen ON b.generator_id = p_gen.id
 
+          -- Подключение общей брони (Frame Stats)
           LEFT JOIN frame_stats f_h ON b.head_id = f_h.frame_id
           LEFT JOIN frame_stats f_c ON b.core_id = f_c.frame_id
           LEFT JOIN frame_stats f_a ON b.arms_id = f_a.frame_id
           LEFT JOIN frame_stats f_l ON b.legs_id = f_l.frame_id
 
-          LEFT JOIN leg_stats f_l_stats ON b.legs_id = f_l_stats.leg_id
-          LEFT JOIN arm_stats f_a_stats ON b.arms_id = f_a_stats.arm_id
-          LEFT JOIN generator_stats g_stats ON b.generator_id = g_stats.generator_id
+          -- Подключение таблиц со специфичными статами
+          LEFT JOIN head_stats h_stats           ON b.head_id = h_stats.head_id
+          LEFT JOIN core_stats c_stats           ON b.core_id = c_stats.core_id
+          LEFT JOIN arm_stats f_a_stats          ON b.arms_id = f_a_stats.arm_id
+          LEFT JOIN leg_stats f_l_stats          ON b.legs_id = f_l_stats.leg_id
+          LEFT JOIN booster_stats bst_stats      ON b.booster_id = bst_stats.booster_id
+          LEFT JOIN fcs_stats fcs_stats          ON b.fcs_id = fcs_stats.fcs_id
+          LEFT JOIN generator_stats g_stats      ON b.generator_id = g_stats.generator_id
 ''')
+
 
 
 conn.close()
