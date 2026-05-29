@@ -227,7 +227,7 @@ parts_data = [(1, 'IB-C03H: HAL 826', 'Head', 'Rubicon Research Institute', 3760
               (75, '2C-2000 CRAWLER', 'Legs', 'RaD', 16300, 280, 'Bipedal legs for scout ACs developed by RaD. Originally specced for surface surveys of astronomical objects, this model makes up for what it lacks in combat performance with a light energy footprint and commendable ease of use.'),
               (76, 'DF-LG-08 TIAN-QIANG', 'Legs', 'Dafeng Core Industries', 23600, 400, 'Bipdedal legs developed by Dafeng Core Industries for the heavyweight TIAN-QIANG AC. Built to embody Dafengs "stout tree, slender branches" philosophy, their weight is balanced by heavy upper legs and lighter lower legs.'),
               
-              (77, 'Test_77', 'Booster', 'RaD', 0, 0, '0'),
+              (77, 'BC-0400 MULE', 'Booster', 'RaD', 970, 200, 'Booster developed by RaD for heavyweight machines. Designed for heavy-industry ACs primarily working on the ground, it suffers from a slow vertical boost but boasts excellent energy efficiency.'),
               (78, 'Test_78', 'Booster', 'RaD', 0, 0, '0'),
               (79, 'Test_79', 'Booster', 'RaD', 0, 0, '0'),
               (80, 'Test_80', 'Booster', 'RaD', 0, 0, '0'),
@@ -237,7 +237,7 @@ parts_data = [(1, 'IB-C03H: HAL 826', 'Head', 'Rubicon Research Institute', 3760
               (84, 'Test_84', 'Booster', 'RaD', 0, 0, '0'),
               (85, 'Test_85', 'Booster', 'RaD', 0, 0, '0'),
 
-              (86, 'Test_86', 'FCS', 'RaD', 0, 0, '0'),
+              (86, 'VE-21B', 'FCS', 'Arquebus ADD', 160, 388, 'Long-range combat FCS designed by Arquebus ADD. Retains ADDs earlier focus of obliterating targets at range, while also improving missile performance across the board to enable a "walking fortress" style of AC.'),
               (87, 'Test_87', 'FCS', 'RaD', 0, 0, '0'),
               (88, 'Test_88', 'FCS', 'RaD', 0, 0, '0'),
               (89, 'Test_89', 'FCS', 'RaD', 0, 0, '0'),
@@ -247,7 +247,7 @@ parts_data = [(1, 'IB-C03H: HAL 826', 'Head', 'Rubicon Research Institute', 3760
               (93, 'Test_93', 'FCS', 'RaD', 0, 0, '0'),
               (94, 'Test_94', 'FCS', 'RaD', 0, 0, '0'),
 
-              (95, 'Test_95', 'Generator', 'RaD', 0, 0, '0'),
+              (95, 'VE-20C', 'Generator', 'Arquebus ADD', 10130, 4090, 'Circulating-current generator developed by Arquebus ADD. Features improved EN capacity and output while retaining a focus on energy weapon stabilization. However, it suffers from a heavy weight burden and recharging difficulties.'),
               (96, 'Test_96', 'Generator', 'RaD', 0, 0, '0'),
               (97, 'Test_97', 'Generator', 'RaD', 0, 0, '0'),
               (98, 'Test_98', 'Generator', 'RaD', 0, 0, '0'),
@@ -285,7 +285,7 @@ frame_stats_data = [(1, 930, 169, 182, 180, 436),
                     (21, 0, 0, 0, 0, 0),
                     (22, 0, 0, 0, 0, 0),
 
-                    (23, 0, 0, 0, 0, 0),
+                    (23, 3670, 451, 469, 463, 385),
                     (24, 0, 0, 0, 0, 0),
                     (25, 0, 0, 0, 0, 0),
                     (26, 0, 0, 0, 0, 0),
@@ -302,7 +302,7 @@ frame_stats_data = [(1, 930, 169, 182, 180, 436),
                     (37, 0, 0, 0, 0, 0),
                     (38, 0, 0, 0, 0, 0),
 
-                    (39, 0, 0, 0, 0, 0),
+                    (39, 1620, 196, 230, 190, 0),
                     (40, 0, 0, 0, 0, 0),
                     (41, 0, 0, 0, 0, 0),
                     (42, 0, 0, 0, 0, 0),
@@ -319,7 +319,7 @@ frame_stats_data = [(1, 930, 169, 182, 180, 436),
                     (53, 0, 0, 0, 0, 0),
                     (54, 0, 0, 0, 0, 0),
 
-                    (55, 0, 0, 0, 0, 0),
+                    (55, 8600, 379, 460, 415, 924),
                     (56, 0, 0, 0, 0, 0),
                     (57, 0, 0, 0, 0, 0),
                     (58, 0, 0, 0, 0, 0),
@@ -432,7 +432,7 @@ leg_stats_data = [(55, 91000, 'Tank', None, None),
 c.executemany("INSERT INTO leg_stats (leg_id, load_limit, leg_type, jump_distance, jump_height) VALUES (?, ?, ?, ?, ?)", leg_stats_data)
 conn.commit()
 
-booster_stats_data = [(77, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+booster_stats_data = [(77, 5417, 4434, 405, 17500, 0.46, 670, 0.58, 80000, 7584, 381, 7018, 390),
                       (78, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
                       (79, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
                       (80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -444,7 +444,7 @@ booster_stats_data = [(77, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 c.executemany("INSERT INTO booster_stats (booster_id, thrust, upward_thrust, upward_en_consumption, qb_thrust, qb_jet_duration, qb_en_consumption, qb_reload_time, qb_reload_ideal_weight, ab_thrust, ab_en_consumption, melee_attack_thrust, melee_attack_en_consumption) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", booster_stats_data)
 conn.commit()
 
-fcs_stats_data = [(86, 0, 0, 0, 0, 0), 
+fcs_stats_data = [(86, 15, 50, 80, 97, 70), 
                   (87, 0, 0, 0, 0, 0), 
                   (88, 0, 0, 0, 0, 0), 
                   (89, 0, 0, 0, 0, 0), 
@@ -457,7 +457,7 @@ c.executemany("INSERT INTO fcs_stats (fcs_id, close_assist, medium_assist, long_
 conn.commit()
 
 
-generator_stats_data = [(95, 0, 0, 0, 0, 0),
+generator_stats_data = [(95, 3690, 555, 377, 720, 128),
                         (96, 0, 0, 0, 0, 0),
                         (97, 0, 0, 0, 0, 0),
                         (98, 0, 0, 0, 0, 0),
@@ -470,6 +470,10 @@ generator_stats_data = [(95, 0, 0, 0, 0, 0),
                         (105, 0, 0, 0, 0, 0),
                         (106, 0, 0, 0, 0, 0),]
 c.executemany("INSERT INTO generator_stats (generator_id, en_capacity, en_recharge, supply_recovery, post_recovery_en_supply, en_output) VALUES (?, ?, ?, ?, ?, ?)", generator_stats_data)
+conn.commit()
+
+ac_build_data = [(1, 'Test Build', 1, 23, 39, 55, 77, 86, 95)]
+c.executemany("INSERT INTO ac_build (build_id, build_name, head_id, core_id, arms_id, legs_id, booster_id, fcs_id, generator_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", ac_build_data)
 conn.commit()
 
 # Создание пердставлений полных статов деталей
@@ -556,7 +560,7 @@ c.execute('''CREATE VIEW IF NOT EXISTS ac_build_specs AS
           IFNULL(g_stats.en_output, 0) AS generator_en_output,
           IFNULL(g_stats.en_capacity, 0) AS generator_en_capacity
                     
-          FROM ac_build b
+          FROM ac_build AS b
 
           LEFT JOIN parts p_h   ON b.head_id = p_h.id
           LEFT JOIN parts p_c   ON b.core_id = p_c.id
