@@ -437,7 +437,7 @@ fcs_stats_data = [(86, 15, 50, 80, 97, 70),
 c.executemany("INSERT INTO fcs_stats (fcs_id, close_assist, medium_assist, long_assist, missile_lock_correction, multi_lock_correction) VALUES (?, ?, ?, ?, ?, ?)", fcs_stats_data)
 conn.commit()
 
-generator_stats_data = [(95, 3690, 555, 377, 720, 128),
+generator_stats_data = [(95, 3690, 555, 377, 720, 12800),
                         (96, 0, 0, 0, 0, 0),
                         (97, 0, 0, 0, 0, 0),
                         (98, 0, 0, 0, 0, 0),
@@ -524,6 +524,7 @@ c.execute('''CREATE VIEW IF NOT EXISTS ac_build AS
 
 c.execute('''CREATE VIEW IF NOT EXISTS ac_build_specs AS
           SELECT 
+          b.build_name,
           p_h.name AS head_name,
           p_c.name AS core_name,
           p_a.name AS arms_name,
@@ -532,40 +533,44 @@ c.execute('''CREATE VIEW IF NOT EXISTS ac_build_specs AS
           p_fcs.name AS fcs_name,
           p_gen.name AS generator_name,
 
-          -- Базовые суммарные характеристики
+          -- Рассчёт общего веса и энерго-нагрузки
           (IFNULL(p_h.weight, 0) + IFNULL(p_c.weight, 0) + IFNULL(p_a.weight, 0) + IFNULL(p_l.weight, 0) + IFNULL(p_bst.weight, 0) + IFNULL(p_fcs.weight, 0) + IFNULL(p_gen.weight, 0)) AS total_weight,
           (IFNULL(p_h.en_load, 0) + IFNULL(p_c.en_load, 0) + IFNULL(p_a.en_load, 0) + IFNULL(p_l.en_load, 0) + IFNULL(p_bst.en_load, 0) + IFNULL(p_fcs.en_load, 0) + IFNULL(p_gen.en_load, 0)) AS total_en_load,
     
-          -- Параметры живучести (Frame Stats)
+          -- Рассчёт оставшегося веса
+    (IFNULL(f_l_stats.load_limit, 0) - 
+     (IFNULL(p_h.weight, 0) + IFNULL(p_c.weight, 0) + IFNULL(p_a.weight, 0) + IFNULL(p_l.weight, 0) + IFNULL(p_bst.weight, 0) + IFNULL(p_fcs.weight, 0) + IFNULL(p_gen.weight, 0))) AS weight_margin,
+
+          -- Рассчёт избытка энергии
+    ((IFNULL(g_stats.en_output, 0) * IFNULL(c_stats.generator_output_adj, 100) / 100) - 
+     (IFNULL(p_h.en_load, 0) + IFNULL(p_c.en_load, 0) + IFNULL(p_a.en_load, 0) + IFNULL(p_l.en_load, 0) + IFNULL(p_bst.en_load, 0) + IFNULL(p_fcs.en_load, 0) + IFNULL(p_gen.en_load, 0))) AS en_margin,
+
+          -- Рассчёт суммарного ap и anti полей
           (IFNULL(f_h.ap, 0) + IFNULL(f_c.ap, 0) + IFNULL(f_a.ap, 0) + IFNULL(f_l.ap, 0)) AS total_ap,
           (IFNULL(f_h.anti_kinetic, 0) + IFNULL(f_c.anti_kinetic, 0) + IFNULL(f_a.anti_kinetic, 0) + IFNULL(f_l.anti_kinetic, 0)) AS total_anti_kinetic,
           (IFNULL(f_h.anti_energy, 0) + IFNULL(f_c.anti_energy, 0) + IFNULL(f_a.anti_energy, 0) + IFNULL(f_l.anti_energy, 0)) AS total_anti_energy,
           (IFNULL(f_h.anti_explosive, 0) + IFNULL(f_c.anti_explosive, 0) + IFNULL(f_a.anti_explosive, 0) + IFNULL(f_l.anti_explosive, 0)) AS total_anti_explosive,
           (IFNULL(f_h.attitude_stability, 0) + IFNULL(f_c.attitude_stability, 0) + IFNULL(f_a.attitude_stability, 0) + IFNULL(f_l.attitude_stability, 0)) AS total_attitude_stability,
 
-          -- Уникальные характеристики Головы (Head)
+          -- Рассчёт уникальных параметров деталей
           IFNULL(h_stats.system_recovery, 0) AS head_system_recovery,
           IFNULL(h_stats.scan_distance, 0) AS head_scan_distance,
           IFNULL(h_stats.scan_duration, 0.0) AS head_scan_duration,
 
-          -- Уникальные характеристики Ядра (Core)
           IFNULL(c_stats.booster_efficiency_adj, 0) AS core_booster_efficiency_adj,
           IFNULL(c_stats.generator_output_adj, 0) AS core_generator_output_adj,
           IFNULL(c_stats.generator_supply_adj, 0) AS core_generator_supply_adj,
 
-          -- Уникальные характеристики Рук (Arms)
           IFNULL(f_a_stats.arms_load_limit, 0) AS arms_load_limit,
           IFNULL(f_a_stats.recoil_control, 0) AS arms_recoil_control,
           IFNULL(f_a_stats.firearms_specialization, 0) AS arms_firearms_specialization,
           IFNULL(f_a_stats.melee_specialization, 0) AS arms_melee_specialization,
 
-          -- Уникальные характеристики Ног (Legs)
           IFNULL(f_l_stats.load_limit, 0) AS legs_load_limit,
           IFNULL(f_l_stats.leg_type, 'Unknown') AS legs_type,
-          f_l_stats.jump_distance AS legs_jump_distance, -- Оставляем NULL, так как танки не прыгают
+          f_l_stats.jump_distance AS legs_jump_distance, -- Оставляем NULL, так как танки и ховеры не прыгают
           f_l_stats.jump_height AS legs_jump_height,     -- Оставляем NULL
 
-          -- Уникальные характеристики Бустера (Booster)
           IFNULL(bst_stats.thrust, 0) AS booster_thrust,
           IFNULL(bst_stats.upward_thrust, 0) AS booster_upward_thrust,
           IFNULL(bst_stats.upward_en_consumption, 0) AS booster_upward_en_consumption,
@@ -579,23 +584,31 @@ c.execute('''CREATE VIEW IF NOT EXISTS ac_build_specs AS
           IFNULL(bst_stats.melee_attack_thrust, 0) AS booster_melee_attack_thrust,
           IFNULL(bst_stats.melee_attack_en_consumption, 0) AS booster_melee_attack_en_consumption,
 
-          -- Уникальные характеристики СУО (FCS)
           IFNULL(fcs_stats.close_assist, 0) AS fcs_close_assist,
           IFNULL(fcs_stats.medium_assist, 0) AS fcs_medium_assist,
           IFNULL(fcs_stats.long_assist, 0) AS fcs_long_assist,
           IFNULL(fcs_stats.missile_lock_correction, 0) AS fcs_missile_lock_correction,
           IFNULL(fcs_stats.multi_lock_correction, 0) AS fcs_multi_lock_correction,
 
-          -- Уникальные характеристики Генератора (Generator)
           IFNULL(g_stats.en_output, 0) AS generator_en_output,
           IFNULL(g_stats.en_capacity, 0) AS generator_en_capacity,
           IFNULL(g_stats.en_recharge, 0) AS generator_en_recharge,
           IFNULL(g_stats.supply_recovery, 0) AS generator_supply_recovery,
-          IFNULL(g_stats.post_recovery_en_supply, 0) AS generator_post_recovery_en_supply
+          IFNULL(g_stats.post_recovery_en_supply, 0) AS generator_post_recovery_en_supply,
+
+          -- Рассчёт флагов для валидации сборки
+          CASE 
+            WHEN (IFNULL(p_h.weight, 0) + IFNULL(p_c.weight, 0) + IFNULL(p_a.weight, 0) + IFNULL(p_l.weight, 0) + IFNULL(p_bst.weight, 0) + IFNULL(p_fcs.weight, 0) + IFNULL(p_gen.weight, 0)) > IFNULL(f_l_stats.load_limit, 0) THEN 1 
+            ELSE 0 
+          END AS is_weight_overloaded,
+          CASE 
+            WHEN (IFNULL(p_h.en_load, 0) + IFNULL(p_c.en_load, 0) + IFNULL(p_a.en_load, 0) + IFNULL(p_l.en_load, 0) + IFNULL(p_bst.en_load, 0) + IFNULL(p_fcs.en_load, 0) + IFNULL(p_gen.en_load, 0)) > 
+                 (IFNULL(g_stats.en_output, 0) * IFNULL(c_stats.generator_output_adj, 100) / 100) THEN 1 
+            ELSE 0 
+          END AS is_en_shortage
                     
           FROM ac_build AS b
 
-          -- Подключение базовых деталей
           LEFT JOIN parts p_h   ON b.head_id = p_h.id
           LEFT JOIN parts p_c   ON b.core_id = p_c.id
           LEFT JOIN parts p_a   ON b.arms_id = p_a.id
@@ -604,13 +617,11 @@ c.execute('''CREATE VIEW IF NOT EXISTS ac_build_specs AS
           LEFT JOIN parts p_fcs ON b.fcs_id = p_fcs.id
           LEFT JOIN parts p_gen ON b.generator_id = p_gen.id
 
-          -- Подключение общей брони (Frame Stats)
           LEFT JOIN frame_stats f_h ON b.head_id = f_h.frame_id
           LEFT JOIN frame_stats f_c ON b.core_id = f_c.frame_id
           LEFT JOIN frame_stats f_a ON b.arms_id = f_a.frame_id
           LEFT JOIN frame_stats f_l ON b.legs_id = f_l.frame_id
 
-          -- Подключение таблиц со специфичными статами
           LEFT JOIN head_stats h_stats           ON b.head_id = h_stats.head_id
           LEFT JOIN core_stats c_stats           ON b.core_id = c_stats.core_id
           LEFT JOIN arm_stats f_a_stats          ON b.arms_id = f_a_stats.arm_id
@@ -620,6 +631,38 @@ c.execute('''CREATE VIEW IF NOT EXISTS ac_build_specs AS
           LEFT JOIN generator_stats g_stats      ON b.generator_id = g_stats.generator_id
 ''')
 
+
+# Валидация сборки
+def check_ac_build_by_name(build_name):
+    # Выборка сборки по названию
+    c.execute('''
+       SELECT total_weight, weight_margin, en_margin, is_weight_overloaded, is_en_shortage
+        FROM ac_build_specs 
+        WHERE build_name = ?
+    ''', (build_name,))
+    
+    row = c.fetchone()
+    
+    if not row:
+        print(f"Сборка с именем '{build_name}' не найдена в базе данных.")
+        return
+
+    # Распаковываем полученные вычисления
+    weight, weight_margin, en_margin, weight_overload, en_shortage = row
+    
+    print(f"-- Валидация сборки: {build_name} --")
+    
+    # Проверка флагов валидации
+    if weight_overload == 1:
+        print(f"ERROR Предел нагрузки ног превышен на: {abs(weight_margin)}")
+    else:
+        print(f"DONE Предел нагрузки ног в норме, запас веса: {weight_margin}")
+        
+    if en_shortage == 1:
+        print(f"ERROR Лимит нагрузки генератора превышен на: {abs(en_margin)}")
+    else:
+        print(f"DONE Лимит нагрузки генератора в норме, остаток: {en_margin}")
+check_ac_build_by_name("Current AC")
 
 
 conn.close()
